@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_height="fill_parent" android:layout_width="fill_parent"
+	android:shrinkColumns="2" android:paddingBottom="5px" android:paddingLeft="5px">
+	<TableRow>
+		<TextView android:text="XXX" android:id="@+id/csc_label"
+			android:textSize="16px" android:layout_width="fill_parent"
+			android:layout_height="wrap_content" />
+	</TableRow>
+	<TableRow>
+		<ImageView android:id="@+id/csc_summary_img" android:paddingBottom="5px"/>
+	</TableRow>
+</TableLayout>
