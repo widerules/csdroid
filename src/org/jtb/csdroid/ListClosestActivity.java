@@ -282,22 +282,21 @@ public class ListClosestActivity extends Activity implements LocationListener {
 		}
 		case SERVICE_START_DIALOG: {
 			mServiceStartDialog = new ProgressDialog(this);
-			mServiceStartDialog.setMessage("Starting service, please wait.");
+			mServiceStartDialog.setMessage("Preparing locations, please wait.");
 			mServiceStartDialog.setIndeterminate(true);
 			mServiceStartDialog.setCancelable(false);
 			return mServiceStartDialog;
 		}
 		case SERVICE_UPDATE_DIALOG: {
 			mServiceUpdateDialog = new ProgressDialog(this);
-			mServiceUpdateDialog.setMessage("Updating service, please wait.");
+			mServiceUpdateDialog.setMessage("Updating locations, please wait.");
 			mServiceUpdateDialog.setIndeterminate(true);
 			mServiceUpdateDialog.setCancelable(false);
 			return mServiceUpdateDialog;
 		}
 		case REFRESH_ERROR_DIALOG: {
 			mRefreshErrorDialog = new AlertDialog.Builder(this).create();
-			mRefreshErrorDialog.setTitle("Service Update Error: "
-					+ mRefreshError);
+			mRefreshErrorDialog.setTitle("Error preparing data");
 			mRefreshErrorDialog.setMessage(mRefreshError);
 			mRefreshErrorDialog.setButton("OK",
 					new DialogInterface.OnClickListener() {
@@ -323,16 +322,6 @@ public class ListClosestActivity extends Activity implements LocationListener {
 			});
 			mInfoDialog = builder.create();
 			
-			/*
-			mInfoDialog = new Dialog(this);
-			mInfoDialog.setContentView(R.layout.info);
-			Button b = (Button) mInfoDialog.findViewById(R.id.info_ok_button);
-			b.setOnClickListener(new OnClickListener() {
-				public void onClick(View v) {
-					dismissDialog(INFO_DIALOG);					
-				}			
-			});
-			*/
 			return mInfoDialog;
 		}
 		case LOCATION_WAIT_DIALOG: {
@@ -340,7 +329,7 @@ public class ListClosestActivity extends Activity implements LocationListener {
 			mLocationWaitDialog.setIndeterminate(true);
 			mLocationWaitDialog.setMessage("Waiting for location. "
 					+ "You may want to enable GPS, "
-					+ "wifi, or ensure you have a strong celluar connection.");
+					+ "WiFi, or ensure you have a strong cell signal.");
 			return mLocationWaitDialog;			
 		}
 		}
