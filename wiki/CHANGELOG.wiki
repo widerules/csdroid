@@ -1,0 +1,2 @@
+  * 0.1: initial revision
+  * 0.2: add color ratings to chart list
