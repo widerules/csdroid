@@ -1,0 +1,5 @@
+= seeing =
+
+none = no seeing (daylight)
+0 = worst
+5 = best
