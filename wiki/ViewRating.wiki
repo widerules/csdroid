@@ -11,8 +11,8 @@
 
 = clouds =
 
-  * 10 = best
-  * 0 = worst
+  * 10 = worst
+  * 0 = best
 
 = view rating =
 
