@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical" android:layout_width="fill_parent"
+	android:layout_height="fill_parent" android:paddingLeft="16px" android:paddingRight="16px">
+	<LinearLayout android:orientation="horizontal"
+		android:layout_height="fill_parent" 
+		android:layout_width="wrap_content" android:layout_gravity="center_horizontal">
+		<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:src="@drawable/icon" />
+		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+			android:orientation="vertical" android:layout_width="fill_parent"
+			android:layout_height="fill_parent" android:paddingLeft="5px">
+			<TextView android:text="CSDroid"
+				android:textSize="16px" android:layout_width="fill_parent"
+				android:layout_height="wrap_content"  />
+			<TextView android:text="Clear Sky Droid"
+				android:textSize="16px" android:layout_width="fill_parent"
+				android:layout_height="wrap_content" />
+		</LinearLayout>
+	</LinearLayout>
+	<TextView android:text="by jeffrey.blattman@gmail.com"
+		android:layout_width="fill_parent" android:layout_height="wrap_content"
+		android:gravity="center_horizontal" android:textSize="12px"
+		android:autoLink="email" />
+	<TextView android:text="All data and images used with permission from Clear Dark Sky"
+		android:layout_width="fill_parent" android:layout_height="wrap_content"
+		android:gravity="center_horizontal" android:textSize="12px" android:paddingTop="32px"
+		android:autoLink="email" />
+	<TextView android:text="http://cleardarksky.com"
+		android:layout_width="fill_parent" android:layout_height="wrap_content"
+		android:gravity="center_horizontal" android:textSize="12px"
+		android:autoLink="web" />
+</LinearLayout>
