@@ -1,21 +1,21 @@
 = seeing =
 
-* none = no seeing (daylight), this sets rating to 0
-* 0 = worst
-* 5 = best
+  * none = no seeing (daylight), this sets rating to 0
+  * 0 = worst
+  * 5 = best
 
 = transparency =
 
-* 0 = worst
-* 5 = best
+  * 0 = worst
+  * 5 = best
 
 = clouds =
 
-* 10 = best
-* 0 = worst
+  * 10 = best
+  * 0 = worst
 
 = view rating =
 
-* viewRating = (seeing == 'none') ? -1 : seeing + trans + cloud
-* max value is 20, min value is -1
-* excellent = 16-20, good = 11-16, fair = 6-10, poor = 1-5, none = 0 
+  * viewRating = (seeing == 'none') ? -1 : seeing + trans + cloud
+  * max value is 20, min value is -1
+  * excellent = 16-20, good = 11-16, fair = 6-10, poor = 1-5, none = 0 
