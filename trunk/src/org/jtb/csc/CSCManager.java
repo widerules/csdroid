@@ -1,8 +1,11 @@
 package org.jtb.csc;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,7 +42,8 @@ public class CSCManager {
 	private static CSCManager manager;
 
 	private Context context;
-	private Map<String, Site> siteMap = null;
+	private Map<String,Site> siteMap = null;
+	private Map<String,Conditions> conditionsMap = new HashMap<String,Conditions>();
 	private File cacheDir;
 	private File siteFile;
 	private File siteLocationFile;
@@ -61,7 +65,7 @@ public class CSCManager {
 		manager.refresh();
 		return manager;
 	}
-
+	
 	public synchronized void refresh() {
 		//
 		// only refresh if time stamp doesn't exist or
@@ -111,10 +115,15 @@ public class CSCManager {
 		return new Date(d);
 	}
 
-	private void readCondition(Site s) {
-		String fn = s.getConditionsFileName();
-		String url = CONDITIONS_URL_PREFIX + fn;
-		File f = new File(cacheDir + File.separator + fn);
+	private void readConditions(List<Site> sites) {
+		for (Site s: sites) {
+			readConditions(s);
+		}
+	}
+
+	private void readConditions(Site s) {
+		String url = s.getConditionsUrl();
+		File f = s.getConditionsFile();
 		readUrl(url, f);
 	}
 
@@ -126,7 +135,7 @@ public class CSCManager {
 
 		try {
 			is = new FileInputStream(siteFile);
-			br = new BufferedReader(new InputStreamReader(is, "ISO-8859-1"));
+			br = new BufferedReader(new InputStreamReader(is, "ISO-8859-1"), 8192);
 
 			String line;
 			while ((line = br.readLine()) != null) {
@@ -143,9 +152,6 @@ public class CSCManager {
 				if (br != null) {
 					br.close();
 				}
-				if (is != null) {
-					is.close();
-				}
 			} catch (IOException ioe) {
 				Log.e(getClass().getSimpleName(), "error closing sites file",
 						ioe);
@@ -161,7 +167,7 @@ public class CSCManager {
 
 		try {
 			is = new FileInputStream(siteLocationFile);
-			br = new BufferedReader(new InputStreamReader(is, "ISO-8859-1"));
+			br = new BufferedReader(new InputStreamReader(is, "ISO-8859-1"), 8192);
 
 			String line;
 			while ((line = br.readLine()) != null) {
@@ -191,9 +197,6 @@ public class CSCManager {
 				if (br != null) {
 					br.close();
 				}
-				if (is != null) {
-					is.close();
-				}
 			} catch (IOException ioe) {
 				Log.e(getClass().getSimpleName(),
 						"error closing site locations file", ioe);
@@ -217,29 +220,27 @@ public class CSCManager {
 						+ ", response code: " + uc.getResponseCode());
 				return;
 			}
-			is = uc.getInputStream();
+			is = new BufferedInputStream(uc.getInputStream(), 512);
 			if (f.exists()) {
 				f.delete();
 			}
 			f.createNewFile();
-			os = new FileOutputStream(f);
+			os = new BufferedOutputStream(new FileOutputStream(f), 512);
 
-			byte[] buffer = new byte[1024];
+			byte[] buffer = new byte[512];
 			int count;
-			while ((count = is.read(buffer, 0, 1024)) != -1) {
+			while ((count = is.read(buffer, 0, 512)) != -1) {
 				os.write(buffer, 0, count);
 			}
-		} catch (MalformedURLException e) {
-			throw new AssertionError(e);
-		} catch (IOException e) {
-			throw new AssertionError(e);
+		} catch (Throwable t) {
+			Log.w(getClass().getSimpleName(), t);
+			return;
 		} finally {
 			try {
 				if (is != null) {
 					is.close();
 				}
 				if (os != null) {
-					os.flush();
 					os.close();
 				}
 			} catch (IOException ioe) {
@@ -248,7 +249,7 @@ public class CSCManager {
 		}
 	}
 
-	private void clearCache() {
+	public synchronized void clearCache() {
 		if (cacheDir.exists()) {
 			File[] files = cacheDir.listFiles();
 			for (int i = 0; i < files.length; i++) {
@@ -257,7 +258,7 @@ public class CSCManager {
 		}
 	}
 
-	public synchronized List<Site> getSites(Location location, float distance) {
+	public synchronized List<Site> getSites(Location location, float distance, int max) {
 		LocationManager lm = (LocationManager) context
 				.getSystemService(Context.LOCATION_SERVICE);
 		String name = lm.getBestProvider(new Criteria(), true);
@@ -271,14 +272,52 @@ public class CSCManager {
 			if (dt < distance) {
 				s.setDistance(dt);
 				sites.add(s);
+				if (sites.size() == max) {
+					break;
+				}
 			}
 		}
 		Collections.sort(sites, new Site.DistanceComparator<Site>());
+		
 		readSummaryImages(sites);
-
+		readConditions(sites);
+		getConditions(sites);
+		
 		return sites;
 	}
 
+	public void getConditions(List<Site> sites) {
+		for (Site s: sites) {
+			getConditions(s);
+		}
+	}
+	
+	public synchronized Conditions getConditions(Site s) {
+		InputStream is = null;
+		Conditions cs = conditionsMap.get(s.getId());
+		if (cs != null) {
+			return cs;
+		}
+		try {
+			is = new FileInputStream(s.getConditionsFile());
+			cs = new Conditions(is);
+			conditionsMap.put(s.getId(), cs);
+			return cs;
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			Log.w(getClass().getSimpleName(), "could not read conditions file for site: " + s, e);
+			return null;
+		} finally {
+				if (is != null) {
+					try {
+						is.close();
+					} catch (IOException e) {
+						Log.e(getClass().getSimpleName(), "could not close stream", e);
+					}
+				}
+			}		
+	}
+	
 	public synchronized Site getSite(String id) {
 		Site s = siteMap.get(id);
 		if (s == null) {

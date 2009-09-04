@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 public class Site implements Serializable {
     private static final Pattern SITE_PATTERN = Pattern.compile("([^|]+)\\|([^|]+)\\|([^|]+)");
 	private static final String URL_PREFIX = "http://cleardarksky.com/c/";
+	private static final String CONDITIONS_URL_PREFIX = "http://cleardarksky.com/txtc/";
 
     private String id;
     private String name;
@@ -119,6 +120,10 @@ public class Site implements Serializable {
 	public File getDetailImageFile() {
 		return new File(cacheDir + File.separator + getDetailImageFileName());
 	}
+
+	public File getConditionsFile() {
+		return new File(cacheDir + File.separator + getConditionsFileName());
+	}
 	
 	public String getUrl() {
 		return URL_PREFIX + getHtmlFileName();
@@ -130,5 +135,9 @@ public class Site implements Serializable {
 	
 	public String getDetailImageUrl() {
 		return URL_PREFIX + getDetailImageFileName();		
+	}
+
+	public String getConditionsUrl() {
+		return CONDITIONS_URL_PREFIX + getConditionsFileName();		
 	}
 }
