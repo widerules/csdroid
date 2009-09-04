@@ -4,5 +4,5 @@
 	android:layout_height="wrap_content">
 	<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
 		android:layout_width="fill_parent" android:layout_height="wrap_content"
-		android:id="@+id/detail_img" android:src="@drawable/testcsk"/>
+		android:id="@+id/detail_img"/>
 </LinearLayout>

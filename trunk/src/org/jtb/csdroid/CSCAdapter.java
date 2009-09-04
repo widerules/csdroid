@@ -1,5 +1,8 @@
 package org.jtb.csdroid;
 
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.List;
 
 import org.jtb.csc.CSCManager;
@@ -10,6 +13,7 @@ import org.jtb.csc.ViewRating;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -59,8 +63,14 @@ public class CSCAdapter extends ArrayAdapter {
 		label.setText(region + " - " + name);
 
 		ImageView summaryImg = (ImageView) view.findViewById(R.id.csc_summary_img);
-		Bitmap bm = BitmapFactory.decodeFile(s.getSummaryImageFile().toString());
-		summaryImg.setImageBitmap(bm);
+		BufferedInputStream bis;
+		try {
+			bis = new BufferedInputStream(new FileInputStream(s.getSummaryImageFile()), 512);
+			Bitmap bm = BitmapFactory.decodeStream(bis);
+			summaryImg.setImageBitmap(bm);
+		} catch (FileNotFoundException e) {
+			Log.e(getClass().getSimpleName(), "could not read summary image", e);
+		}		
 		
 		return view;
 	}	

@@ -161,7 +161,7 @@ public class ListClosestActivity extends Activity implements LocationListener {
 		LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		String name = lm.getBestProvider(new Criteria(), true);
 		if (name == null) {
-			// TODO: error dialog an exit (this.finish())
+			// TODO: error dialog an exit (this.finish())?
 			Log.e(getClass().getSimpleName(),
 					"no best location provider returned");
 		}
@@ -341,7 +341,7 @@ public class ListClosestActivity extends Activity implements LocationListener {
 		}
 		case REFRESH_DIALOG: {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setMessage("Charts update automatically. Manual updates can add extra load to servers. Are you sure?");
+			builder.setMessage("Charts update automatically. Manual updates can add extra load to servers.\n\nAre you sure?");
 			builder.setPositiveButton(R.string.yes,
 					new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int which) {

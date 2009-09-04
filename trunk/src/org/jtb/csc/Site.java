@@ -6,12 +6,14 @@ import java.util.Comparator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import android.util.Log;
+
 public class Site implements Serializable {
     private static final Pattern SITE_PATTERN = Pattern.compile("([^|]+)\\|([^|]+)\\|([^|]+)");
 	private static final String URL_PREFIX = "http://cleardarksky.com/c/";
 	private static final String CONDITIONS_URL_PREFIX = "http://cleardarksky.com/txtc/";
 
-    private String id;
+    private String id = null;
     private String name;
     private String region;
     private double latitude;
@@ -21,7 +23,16 @@ public class Site implements Serializable {
     
     public static class DistanceComparator<T> implements Comparator<Site> {
 		public int compare(Site s1, Site s2) {
-			return new Float(s1.getDistance()).compareTo(new Float(s2.getDistance()));
+			float d1 = s1.getDistance();
+			float d2 = s2.getDistance();
+			
+			if (d1 > d2) {
+				return 1;
+			}
+			if (d1 < d2) {
+				return -1;				
+			}
+			return 0;
 		}	
     }
     
@@ -29,7 +40,7 @@ public class Site implements Serializable {
         Matcher m = SITE_PATTERN.matcher(line);
 
         if (!m.matches()) {
-            // TODO: android log
+            Log.w(getClass().getSimpleName(), "could not parse site, line: " + line);
             return;
         }
         id = m.group(1);
