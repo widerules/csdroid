@@ -27,13 +27,21 @@ public class CSCService extends Service {
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		Log.d(getClass().getSimpleName(), "service started");
 		mTimer.scheduleAtFixedRate(new TimerTask() {
 			public void run() {
 				Message m = Message.obtain(ListClosestActivity.mStaticHandler, ListClosestActivity.UPDATE_SERVICE_WHAT);
 				ListClosestActivity.mStaticHandler.sendMessage(m);
 			}
+			// delay refresh interval, because activity already initialized
+			// service data for its use
 			// schedule service a minute after the refresh interval, to avoid race conditions
 		}, CSCManager.REFRESH_INTERVAL, CSCManager.REFRESH_INTERVAL + 10 * 1000);
+	}
+	
+	@Override
+	public void onDestroy() {
+		Log.d(getClass().getSimpleName(), "service stopped");		
 	}
 
 }

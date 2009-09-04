@@ -42,16 +42,17 @@ public class CSCManager {
 	private static CSCManager manager;
 
 	private Context context;
-	private Map<String,Site> siteMap = null;
-	private Map<String,Conditions> conditionsMap = new HashMap<String,Conditions>();
+	private Map<String, Site> siteMap = null;
+	private Map<String, Conditions> conditionsMap = new HashMap<String, Conditions>();
 	private File cacheDir;
 	private File siteFile;
 	private File siteLocationFile;
 
 	private CSCManager(Context context) {
 		this.context = context;
+		// cacheDir = context.getCacheDir();
 		cacheDir = context.getDir("csc", Context.MODE_PRIVATE);
-		Log.w(getClass().getSimpleName(), "using cache dir: " + cacheDir);
+		Log.d(getClass().getSimpleName(), "using cache dir: " + cacheDir);
 		siteFile = new File(cacheDir.toString() + "/" + "chart_prop00.txt");
 		siteLocationFile = new File(cacheDir.toString() + "/"
 				+ "chart_keys00.txt");
@@ -65,7 +66,7 @@ public class CSCManager {
 		manager.refresh();
 		return manager;
 	}
-	
+
 	public synchronized void refresh() {
 		//
 		// only refresh if time stamp doesn't exist or
@@ -87,24 +88,28 @@ public class CSCManager {
 		if (d == null
 				|| (new Date().getTime() > d.getTime() + REFRESH_INTERVAL)) {
 			// case 1: no or out of date data on disk
+			Log.d(getClass().getSimpleName(), "full refresh");
 			clearCache();
 
 			try {
-				readUrl(SITE_URL, siteFile);
-				readUrl(SITE_LOCATION_URL, siteLocationFile);
+				readUrl(SITE_URL, siteFile, 16384);
+				readUrl(SITE_LOCATION_URL, siteLocationFile, 16384);
 				loadSites();
 			} catch (Throwable t) {
 				ListClosestActivity.mStaticHandler.sendMessage(Message.obtain(
-						ListClosestActivity.mStaticHandler, ListClosestActivity.REFRESH_ERROR_SHOW_WHAT,
-						t.getMessage()));
-				siteMap = new HashMap<String,Site>();
+						ListClosestActivity.mStaticHandler,
+						ListClosestActivity.REFRESH_ERROR_SHOW_WHAT, t
+								.getMessage()));
+				siteMap = new HashMap<String, Site>();
 			}
 		} else if (siteMap == null) {
 			// case 2: data on disk, but not in memory
+			Log.d(getClass().getSimpleName(), "partial refresh");
 			loadSites();
 		}
 
 		// case 3: data in memory
+		Log.d(getClass().getSimpleName(), "no refresh");
 	}
 
 	private Date getLastRefresh() {
@@ -116,7 +121,7 @@ public class CSCManager {
 	}
 
 	private void readConditions(List<Site> sites) {
-		for (Site s: sites) {
+		for (Site s : sites) {
 			readConditions(s);
 		}
 	}
@@ -124,7 +129,7 @@ public class CSCManager {
 	private void readConditions(Site s) {
 		String url = s.getConditionsUrl();
 		File f = s.getConditionsFile();
-		readUrl(url, f);
+		readUrl(url, f, 512);
 	}
 
 	private void loadSites() {
@@ -135,14 +140,17 @@ public class CSCManager {
 
 		try {
 			is = new FileInputStream(siteFile);
-			br = new BufferedReader(new InputStreamReader(is, "ISO-8859-1"), 8192);
+			br = new BufferedReader(new InputStreamReader(is, "ISO-8859-1"),
+					16384);
 
 			String line;
 			while ((line = br.readLine()) != null) {
 				Site s = new Site(cacheDir, line);
-				siteMap.put(s.getId(), s);
+				if (s.getId() != null) {
+					siteMap.put(s.getId(), s);
+				}
 			}
-			Log.w(this.getClass().getSimpleName(), "read "
+			Log.d(this.getClass().getSimpleName(), "read "
 					+ siteMap.keySet().size() + " sites");
 		} catch (IOException ioe) {
 			Log.e(getClass().getSimpleName(), "error loading sites file", ioe);
@@ -167,20 +175,21 @@ public class CSCManager {
 
 		try {
 			is = new FileInputStream(siteLocationFile);
-			br = new BufferedReader(new InputStreamReader(is, "ISO-8859-1"), 8192);
+			br = new BufferedReader(new InputStreamReader(is, "ISO-8859-1"),
+					16384);
 
 			String line;
 			while ((line = br.readLine()) != null) {
 				SiteLocation sl = new SiteLocation(line);
 				if (!sl.isLocatable()) {
-					Log.w(this.getClass().getSimpleName(),
+					Log.d(this.getClass().getSimpleName(),
 							"no site location found for site id: \""
 									+ sl.getId() + "\", removing");
 					siteMap.remove(sl.getId());
 				} else {
 					Site s = siteMap.get(sl.getId());
 					if (s == null) {
-						Log.w(this.getClass().getSimpleName(),
+						Log.d(this.getClass().getSimpleName(),
 								"no site found for site location id: \""
 										+ sl.getId() + "\", ignoring");
 					} else {
@@ -204,9 +213,10 @@ public class CSCManager {
 		}
 	}
 
-	private void readUrl(String url, File f) {
-		Log.i(getClass().getSimpleName(), "reading URL: " + url + " into file: " + f);
-		
+	private void readUrl(String url, File f, int bufferSize) {
+		Log.d(getClass().getSimpleName(), "reading URL: " + url
+				+ " into file: " + f);
+
 		InputStream is = null;
 		OutputStream os = null;
 
@@ -216,20 +226,20 @@ public class CSCManager {
 			uc.setReadTimeout(10000);
 
 			if (uc.getResponseCode() != 200) {
-				Log.e(getClass().getSimpleName(), "error reading URL: " + u
+				Log.w(getClass().getSimpleName(), "error reading URL: " + u
 						+ ", response code: " + uc.getResponseCode());
 				return;
 			}
-			is = new BufferedInputStream(uc.getInputStream(), 512);
+			is = new BufferedInputStream(uc.getInputStream(), bufferSize);
 			if (f.exists()) {
 				f.delete();
 			}
 			f.createNewFile();
-			os = new BufferedOutputStream(new FileOutputStream(f), 512);
+			os = new BufferedOutputStream(new FileOutputStream(f), bufferSize);
 
-			byte[] buffer = new byte[512];
+			byte[] buffer = new byte[bufferSize];
 			int count;
-			while ((count = is.read(buffer, 0, 512)) != -1) {
+			while ((count = is.read(buffer, 0, bufferSize)) != -1) {
 				os.write(buffer, 0, count);
 			}
 		} catch (Throwable t) {
@@ -244,7 +254,7 @@ public class CSCManager {
 					os.close();
 				}
 			} catch (IOException ioe) {
-				// TODO: android log
+				Log.e(getClass().getSimpleName(), "error closing file", ioe);
 			}
 		}
 	}
@@ -258,7 +268,8 @@ public class CSCManager {
 		}
 	}
 
-	public synchronized List<Site> getSites(Location location, float distance, int max) {
+	public synchronized List<Site> getSites(Location location, float distance,
+			int max) {
 		LocationManager lm = (LocationManager) context
 				.getSystemService(Context.LOCATION_SERVICE);
 		String name = lm.getBestProvider(new Criteria(), true);
@@ -272,26 +283,24 @@ public class CSCManager {
 			if (dt < distance) {
 				s.setDistance(dt);
 				sites.add(s);
-				if (sites.size() == max) {
-					break;
-				}
 			}
 		}
 		Collections.sort(sites, new Site.DistanceComparator<Site>());
-		
+		sites = sites.subList(0, Math.min(sites.size(), 10));
+
 		readSummaryImages(sites);
 		readConditions(sites);
 		getConditions(sites);
-		
+
 		return sites;
 	}
 
 	public void getConditions(List<Site> sites) {
-		for (Site s: sites) {
+		for (Site s : sites) {
 			getConditions(s);
 		}
 	}
-	
+
 	public synchronized Conditions getConditions(Site s) {
 		InputStream is = null;
 		Conditions cs = conditionsMap.get(s.getId());
@@ -304,20 +313,21 @@ public class CSCManager {
 			conditionsMap.put(s.getId(), cs);
 			return cs;
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			Log.w(getClass().getSimpleName(), "could not read conditions file for site: " + s, e);
+			Log.w(getClass().getSimpleName(),
+					"could not read conditions file for site: " + s, e);
 			return null;
 		} finally {
-				if (is != null) {
-					try {
-						is.close();
-					} catch (IOException e) {
-						Log.e(getClass().getSimpleName(), "could not close stream", e);
-					}
+			if (is != null) {
+				try {
+					is.close();
+				} catch (IOException e) {
+					Log.e(getClass().getSimpleName(), "could not close stream",
+							e);
 				}
-			}		
+			}
+		}
 	}
-	
+
 	public synchronized Site getSite(String id) {
 		Site s = siteMap.get(id);
 		if (s == null) {
@@ -332,7 +342,7 @@ public class CSCManager {
 			String u = s.getSummaryImageUrl();
 			File f = s.getSummaryImageFile();
 			if (!f.exists()) {
-				readUrl(u, f);
+				readUrl(u, f, 512);
 			}
 		}
 	}
@@ -341,7 +351,7 @@ public class CSCManager {
 		String u = s.getDetailImageUrl();
 		File f = s.getDetailImageFile();
 		if (!f.exists()) {
-			readUrl(u, f);
+			readUrl(u, f, 4096);
 		}
 	}
 }
