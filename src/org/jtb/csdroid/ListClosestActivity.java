@@ -5,6 +5,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.jtb.csc.CSCManager;
+import org.jtb.csc.Conditions;
 import org.jtb.csc.Site;
 
 import android.app.Activity;
@@ -14,6 +15,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -34,7 +36,10 @@ import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TableLayout;
+import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemSelectedListener;
 
 public class ListClosestActivity extends Activity implements LocationListener {
 	static final int UPDATE_LOCATION_DIALOG_SHOW_WHAT = 0;
@@ -58,18 +63,22 @@ public class ListClosestActivity extends Activity implements LocationListener {
 	private static final int REFRESH_ERROR_DIALOG = 3;
 	private static final int LOCATION_WAIT_DIALOG = 4;
 	private static final int INFO_DIALOG = 5;
-	
+	private static final int REFRESH_DIALOG = 6;
+
 	private static final int INFO_MENU = 0;
+	private static final int REFRESH_MENU = 1;
 
 	private ProgressDialog mUpdateLocationDialog;
 	private ProgressDialog mServiceStartDialog;
 	private ProgressDialog mServiceUpdateDialog;
 	private AlertDialog mRefreshErrorDialog;
+	private AlertDialog mRefreshDialog;
 	private ProgressDialog mLocationWaitDialog = null;
 	private Dialog mInfoDialog = null;
 
 	private List<Site> mSites;
 	private ListView mCSCListView;
+	private TextView mNoChartsTextView;
 	private ListClosestActivity mThis;
 	private Timer mTimer = new Timer();
 	private String mRefreshError = null;
@@ -115,13 +124,8 @@ public class ListClosestActivity extends Activity implements LocationListener {
 				dismissDialog(SERVICE_UPDATE_DIALOG);
 				break;
 			case REFRESH_ERROR_SHOW_WHAT:
+				closeServiceDialogs();
 				mRefreshError = (String) msg.obj;
-				if (mServiceStartDialog != null) {
-					dismissDialog(SERVICE_START_DIALOG);
-				}
-				if (mServiceUpdateDialog != null) {
-					dismissDialog(SERVICE_UPDATE_DIALOG);
-				}
 				showDialog(REFRESH_ERROR_DIALOG);
 				break;
 			case REFRESH_ERROR_HIDE_WHAT:
@@ -132,13 +136,25 @@ public class ListClosestActivity extends Activity implements LocationListener {
 	};
 	public static Handler mStaticHandler = null;
 
-	private void updateList() {
-		if (mSites == null) {
-			return;
+	private void closeServiceDialogs() {
+		if (mServiceStartDialog != null) {
+			dismissDialog(SERVICE_START_DIALOG);
 		}
-		CSCAdapter csca = new CSCAdapter(mThis, mSites);
-		mCSCListView.setAdapter(csca);
-		mCSCListView.setVisibility(View.VISIBLE);
+		if (mServiceUpdateDialog != null) {
+			dismissDialog(SERVICE_UPDATE_DIALOG);
+		}
+	}
+
+	private void updateList() {
+		if (mSites == null || mSites.size() == 0) {
+			mCSCListView.setVisibility(View.GONE);
+			mNoChartsTextView.setVisibility(View.VISIBLE);
+		} else {
+			CSCAdapter csca = new CSCAdapter(mThis, mSites);
+			mCSCListView.setAdapter(csca);
+			mNoChartsTextView.setVisibility(View.GONE);
+			mCSCListView.setVisibility(View.VISIBLE);
+		}
 	}
 
 	public void updateLocation() {
@@ -146,11 +162,14 @@ public class ListClosestActivity extends Activity implements LocationListener {
 		String name = lm.getBestProvider(new Criteria(), true);
 		if (name == null) {
 			// TODO: error dialog an exit (this.finish())
-			Log.e(getClass().getSimpleName(), "no best location provider returned");
+			Log.e(getClass().getSimpleName(),
+					"no best location provider returned");
 		}
 		// LocationProvider lp = lm.getProvider(name);
 		onLocationChanged(lm.getLastKnownLocation(name));
-		lm.requestLocationUpdates(name, 10 * 60 * 1000, 10 * 1000, mThis); // 10 mins, 10km
+		lm.requestLocationUpdates(name, 10 * 60 * 1000, 10 * 1000, mThis); // 10
+																			// mins,
+																			// 10km
 	}
 
 	public void startService() {
@@ -158,11 +177,10 @@ public class ListClosestActivity extends Activity implements LocationListener {
 			public void run() {
 				mHandler.sendMessage(Message.obtain(mHandler,
 						SERVICE_START_DIALOG_SHOW_WHAT));
-				mHandler.sendMessage(Message.obtain(mHandler,
-						HIDE_LIST_WHAT));
+				mHandler.sendMessage(Message.obtain(mHandler, HIDE_LIST_WHAT));
 				CSCManager.getInstance(mThis);
 				mHandler.sendMessage(Message.obtain(mHandler,
-						SERVICE_START_DIALOG_DISMISS_WHAT));				
+						SERVICE_START_DIALOG_DISMISS_WHAT));
 				mHandler.sendMessage(Message.obtain(mHandler,
 						UPDATE_LOCATION_WHAT));
 
@@ -180,7 +198,8 @@ public class ListClosestActivity extends Activity implements LocationListener {
 	public void updateService() {
 		new Thread(new Runnable() {
 			public void run() {
-				mHandler.sendMessage(Message.obtain(mHandler, SERVICE_UPDATE_DIALOG_SHOW_WHAT));
+				mHandler.sendMessage(Message.obtain(mHandler,
+						SERVICE_UPDATE_DIALOG_SHOW_WHAT));
 				mHandler.sendMessage(Message.obtain(mHandler, HIDE_LIST_WHAT));
 
 				CSCManager.getInstance(mThis);
@@ -201,16 +220,36 @@ public class ListClosestActivity extends Activity implements LocationListener {
 		mThis = this;
 		mStaticHandler = mHandler;
 
+		mNoChartsTextView = (TextView) findViewById(R.id.no_charts_text);
 		mCSCListView = (ListView) findViewById(R.id.csc_list);
 		mCSCListView.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View v,
 					int position, long id) {
-				Intent i = new Intent(parent.getContext(), DetailActivity.class);
 				Site s = mSites.get(position);
+				Intent i = new Intent(parent.getContext(), DetailActivity.class);
 				i.putExtra("org.jtb.csdroid.site.id", s.getId());
 				startActivity(i);
 			}
 		});
+		/*
+		 * mCSCListView.setOnItemSelectedListener(new OnItemSelectedListener() {
+		 * public void onItemSelected(AdapterView<?> parent, View view, int
+		 * position, long id) {
+		 * 
+		 * int count = parent.getChildCount(); for (int i = 0; i < count; i++) {
+		 * TableLayout tl = (TableLayout)parent.getChildAt(i); Site s =
+		 * mSites.get(i); Conditions cs =
+		 * CSCManager.getInstance(mThis).getConditions(s); if (i == position) {
+		 * // selected int color = cs.getViewRating().getSelectedColor();
+		 * tl.setBackgroundColor(color); TextView text =
+		 * (TextView)tl.findViewById(R.id.csc_label);
+		 * text.setTextColor(Color.parseColor("#333333")); } else { int color =
+		 * cs.getViewRating().getColor(); tl.setBackgroundColor(color); TextView
+		 * text = (TextView)tl.findViewById(R.id.csc_label);
+		 * text.setTextColor(Color.parseColor("#ffffff")); } } }
+		 * 
+		 * public void onNothingSelected(AdapterView<?> parent) { } });
+		 */
 
 		startService();
 	}
@@ -228,11 +267,12 @@ public class ListClosestActivity extends Activity implements LocationListener {
 					mHandler.sendMessage(Message.obtain(mHandler,
 							LOCATION_WAIT_DIALOG_DISMISS_WHAT));
 				}
-				Message m = Message.obtain(mHandler, UPDATE_LOCATION_DIALOG_SHOW_WHAT);
+				Message m = Message.obtain(mHandler,
+						UPDATE_LOCATION_DIALOG_SHOW_WHAT);
 				mHandler.sendMessage(m);
 
 				CSCManager cscm = CSCManager.getInstance(mThis);
-				mSites = cscm.getSites(location, 200 * 1000); // 200km
+				mSites = cscm.getSites(location, 100 * 1000, 10); // 100km
 				mHandler
 						.sendMessage(Message.obtain(mHandler, UPDATE_LIST_WHAT));
 				mHandler.sendMessage(Message.obtain(mHandler,
@@ -253,57 +293,82 @@ public class ListClosestActivity extends Activity implements LocationListener {
 		// TODO Auto-generated method stub
 	}
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        boolean result = super.onCreateOptionsMenu(menu);
-        menu.add(0, INFO_MENU, 0, R.string.info_menu).setIcon(R.drawable.info);
-        return result;
-    }
-    
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-        case INFO_MENU:
-            showDialog(INFO_DIALOG);
-            return true;
-        }
-       
-        return super.onOptionsItemSelected(item);
-    }    
-    
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		boolean result = super.onCreateOptionsMenu(menu);
+		menu.add(0, INFO_MENU, 0, R.string.info_menu).setIcon(R.drawable.info);
+		menu.add(0, REFRESH_MENU, 1, R.string.refresh_menu).setIcon(R.drawable.refresh);
+		return result;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case INFO_MENU:
+			showDialog(INFO_DIALOG);
+			return true;
+		case REFRESH_MENU:
+			showDialog(REFRESH_DIALOG);
+			return true;
+		}
+
+		return super.onOptionsItemSelected(item);
+	}
+
 	protected Dialog onCreateDialog(int id) {
 		switch (id) {
 		case UPDATE_LOCATION_DIALOG: {
 			mUpdateLocationDialog = new ProgressDialog(this);
-			mUpdateLocationDialog.setMessage("Updating location, please wait.");
+			mUpdateLocationDialog
+					.setMessage("Finding closest charts, please wait.");
 			mUpdateLocationDialog.setIndeterminate(true);
 			mUpdateLocationDialog.setCancelable(false);
 			return mUpdateLocationDialog;
 		}
 		case SERVICE_START_DIALOG: {
 			mServiceStartDialog = new ProgressDialog(this);
-			mServiceStartDialog.setMessage("Preparing locations, please wait.");
+			mServiceStartDialog.setMessage("Preparing charts, please wait.");
 			mServiceStartDialog.setIndeterminate(true);
 			mServiceStartDialog.setCancelable(false);
 			return mServiceStartDialog;
 		}
 		case SERVICE_UPDATE_DIALOG: {
 			mServiceUpdateDialog = new ProgressDialog(this);
-			mServiceUpdateDialog.setMessage("Updating locations, please wait.");
+			mServiceUpdateDialog.setMessage("Updating charts, please wait.");
 			mServiceUpdateDialog.setIndeterminate(true);
 			mServiceUpdateDialog.setCancelable(false);
 			return mServiceUpdateDialog;
 		}
-		case REFRESH_ERROR_DIALOG: {
-			mRefreshErrorDialog = new AlertDialog.Builder(this).create();
-			mRefreshErrorDialog.setTitle("Error preparing data");
-			mRefreshErrorDialog.setMessage(mRefreshError);
-			mRefreshErrorDialog.setButton("OK",
+		case REFRESH_DIALOG: {
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setMessage("Charts update automatically. Manual updates can add extra load to servers. Are you sure?");
+			builder.setPositiveButton(R.string.yes,
 					new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int which) {
-							return;
+							dismissDialog(REFRESH_DIALOG);
+							updateService();
 						}
 					});
+			builder.setNegativeButton(R.string.no,
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							dismissDialog(REFRESH_DIALOG);
+						}
+					});
+			mRefreshErrorDialog = builder.create();
+			return mRefreshErrorDialog;
+		}
+		case REFRESH_ERROR_DIALOG: {
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle("Error preparing charts");
+			builder.setMessage(mRefreshError);
+			builder.setNeutralButton(R.string.ok,
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							dismissDialog(REFRESH_ERROR_DIALOG);
+						}
+					});
+			mRefreshErrorDialog = builder.create();
 			return mRefreshErrorDialog;
 		}
 		case INFO_DIALOG: {
@@ -315,13 +380,14 @@ public class ListClosestActivity extends Activity implements LocationListener {
 			layout.setMinimumWidth(240);
 			builder = new AlertDialog.Builder(this);
 			builder.setView(layout);
-			builder.setNeutralButton(R.string.ok, new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int which) {
-					dismissDialog(INFO_DIALOG);
-				}
-			});
+			builder.setNeutralButton(R.string.ok,
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							dismissDialog(INFO_DIALOG);
+						}
+					});
 			mInfoDialog = builder.create();
-			
+
 			return mInfoDialog;
 		}
 		case LOCATION_WAIT_DIALOG: {
@@ -330,11 +396,10 @@ public class ListClosestActivity extends Activity implements LocationListener {
 			mLocationWaitDialog.setMessage("Waiting for location. "
 					+ "You may want to enable GPS, "
 					+ "WiFi, or ensure you have a strong cell signal.");
-			return mLocationWaitDialog;			
+			return mLocationWaitDialog;
 		}
 		}
 		return null;
 	}
-	
-	
+
 }
