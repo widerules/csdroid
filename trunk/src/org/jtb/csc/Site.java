@@ -16,6 +16,8 @@ public class Site implements Serializable {
     private String id = null;
     private String name;
     private String region;
+    private String nameLc;
+    private String regionLc;
     private double latitude;
     private double longitude;
     private float distance;
@@ -45,7 +47,9 @@ public class Site implements Serializable {
         }
         id = m.group(1);
         region = m.group(2);
+        regionLc = region.toLowerCase();
         name = m.group(3);
+        nameLc = name.toLowerCase();
         
         this.cacheDir = cacheDir;
     }
@@ -150,5 +154,30 @@ public class Site implements Serializable {
 
 	public String getConditionsUrl() {
 		return CONDITIONS_URL_PREFIX + getConditionsFileName();		
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof Site)) {
+			return false;
+		}
+		Site other = (Site)o;
+		return id.equals(other.id);
+	}
+	
+	@Override
+	public int hashCode() {
+		return id.hashCode();
+	}
+	
+	public boolean matches(String s) {
+		s = s.toLowerCase();
+		if (nameLc.contains(s)) {
+			return true;
+		}
+		if (regionLc.contains(s)) {
+			return true;
+		}
+		return false;
 	}
 }

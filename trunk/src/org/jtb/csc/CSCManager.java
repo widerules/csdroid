@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jtb.csdroid.ListClosestActivity;
+import org.jtb.csdroid.ClosestActivity;
 
 import android.content.Context;
 import android.location.Criteria;
@@ -96,10 +96,10 @@ public class CSCManager {
 				readUrl(SITE_LOCATION_URL, siteLocationFile, 16384);
 				loadSites();
 			} catch (Throwable t) {
-				ListClosestActivity.mStaticHandler.sendMessage(Message.obtain(
-						ListClosestActivity.mStaticHandler,
-						ListClosestActivity.REFRESH_ERROR_SHOW_WHAT, t
-								.getMessage()));
+				ClosestActivity.mStaticHandler.sendMessage(Message
+						.obtain(ClosestActivity.mStaticHandler,
+								ClosestActivity.REFRESH_ERROR_SHOW_WHAT, t
+										.getMessage()));
 				siteMap = new HashMap<String, Site>();
 			}
 		} else if (siteMap == null) {
@@ -127,9 +127,11 @@ public class CSCManager {
 	}
 
 	private void readConditions(Site s) {
-		String url = s.getConditionsUrl();
 		File f = s.getConditionsFile();
-		readUrl(url, f, 512);
+		if (!f.exists()) {
+			String url = s.getConditionsUrl();
+			readUrl(url, f, 512);
+		}
 	}
 
 	private void loadSites() {
@@ -260,6 +262,9 @@ public class CSCManager {
 	}
 
 	public synchronized void clearCache() {
+		siteMap = null;
+		conditionsMap = new HashMap<String, Conditions>();
+
 		if (cacheDir.exists()) {
 			File[] files = cacheDir.listFiles();
 			for (int i = 0; i < files.length; i++) {
@@ -268,8 +273,7 @@ public class CSCManager {
 		}
 	}
 
-	public synchronized List<Site> getSites(Location location, float distance,
-			int max) {
+	public synchronized List<Site> getSites(Location location, int maxSites) {
 		LocationManager lm = (LocationManager) context
 				.getSystemService(Context.LOCATION_SERVICE);
 		String name = lm.getBestProvider(new Criteria(), true);
@@ -280,13 +284,29 @@ public class CSCManager {
 			l.setLatitude(s.getLatitude());
 			l.setLongitude(s.getLongitude());
 			float dt = location.distanceTo(l);
-			if (dt < distance) {
-				s.setDistance(dt);
-				sites.add(s);
-			}
+			s.setDistance(dt);
+			sites.add(s);
 		}
 		Collections.sort(sites, new Site.DistanceComparator<Site>());
-		sites = sites.subList(0, Math.min(sites.size(), 10));
+		sites = sites.subList(0, Math.min(sites.size(), maxSites));
+
+		readSummaryImages(sites);
+		readConditions(sites);
+		getConditions(sites);
+
+		return sites;
+	}
+
+	public synchronized List<Site> getSites(String s, int maxSites) {
+		List<Site> sites = new ArrayList<Site>();
+		for (Site site : siteMap.values()) {
+			if (site.matches(s)) {
+				sites.add(site);
+			}
+			if (sites.size() == maxSites) {
+				break;
+			}
+		}
 
 		readSummaryImages(sites);
 		readConditions(sites);
@@ -339,9 +359,9 @@ public class CSCManager {
 
 	private void readSummaryImages(List<Site> sites) {
 		for (Site s : sites) {
-			String u = s.getSummaryImageUrl();
 			File f = s.getSummaryImageFile();
 			if (!f.exists()) {
+				String u = s.getSummaryImageUrl();
 				readUrl(u, f, 512);
 			}
 		}
