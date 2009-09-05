@@ -30,8 +30,8 @@ public class CSCService extends Service {
 		Log.d(getClass().getSimpleName(), "service started");
 		mTimer.scheduleAtFixedRate(new TimerTask() {
 			public void run() {
-				Message m = Message.obtain(ListClosestActivity.mStaticHandler, ListClosestActivity.UPDATE_SERVICE_WHAT);
-				ListClosestActivity.mStaticHandler.sendMessage(m);
+				Message m = Message.obtain(TabWidgetActivity.mStaticHandler, TabWidgetActivity.SERVICE_START_WHAT);
+				ClosestActivity.mStaticHandler.sendMessage(m);
 			}
 			// delay refresh interval, because activity already initialized
 			// service data for its use

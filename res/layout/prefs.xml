@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+	<ListPreference android:title="Maximum Charts"
+		android:summary="Maximum number charts. Larger values increase time to compute ratings."
+		android:key="maxCharts" android:defaultValue="5"
+		android:entries="@array/max_charts_entries"
+		android:entryValues="@array/max_charts_values" />
+</PreferenceScreen>
+
