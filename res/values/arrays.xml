@@ -23,7 +23,9 @@
 		<item>20 charts</item>
 	</string-array>
 	<string-array name="click_entries">
-		<item>Detailed View</item>
-		<item>Map View</item>
+		<item>Detailed view</item>
+		<item>Map view</item>
+		<item>Add to favorites</item>
+		<item>Remove from favorites</item>
 	</string-array>
 </resources>

@@ -37,10 +37,12 @@ public class ClosestActivity extends Activity implements LocationListener {
 	static final int UPDATE_LOCATION_DIALOG_DISMISS_WHAT = 1;
 	static final int UPDATE_LIST_WHAT = 6;
 	public static final int REFRESH_ERROR_SHOW_WHAT = 10;
-	public static final int REFRESH_ERROR_HIDE_WHAT = 11;
-	public static final int LOCATION_WAIT_DIALOG_SHOW_WHAT = 12;
-	public static final int LOCATION_WAIT_DIALOG_DISMISS_WHAT = 13;
-	public static final int UPDATE_WHAT = 15;
+	static final int REFRESH_ERROR_HIDE_WHAT = 11;
+	static final int LOCATION_WAIT_DIALOG_SHOW_WHAT = 12;
+	static final int LOCATION_WAIT_DIALOG_DISMISS_WHAT = 13;
+	static final int UPDATE_WHAT = 15;
+	static final int HIDE_LIST_WHAT = 16;
+	static final int SHOW_LIST_WHAT = 17;
 
 	private static final int UPDATE_LOCATION_DIALOG = 0;
 	private static final int REFRESH_ERROR_DIALOG = 3;
@@ -56,12 +58,17 @@ public class ClosestActivity extends Activity implements LocationListener {
 	private ClosestActivity mThis;
 	private Timer mTimer = new Timer();
 	private String mRefreshError = null;
-	private int mListClickPosition;
 	
 	private Handler mHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
+			case HIDE_LIST_WHAT:
+				mCSCListView.setVisibility(View.GONE);
+				break;
+			case SHOW_LIST_WHAT:
+				mCSCListView.setVisibility(View.VISIBLE);
+				break;
 			case UPDATE_WHAT:
 				update();
 				break;
@@ -151,16 +158,24 @@ public class ClosestActivity extends Activity implements LocationListener {
 							LOCATION_WAIT_DIALOG_DISMISS_WHAT));
 					mLocationWaitDialog = null;
 				}
+				
 				Message m = Message.obtain(mHandler,
 						UPDATE_LOCATION_DIALOG_SHOW_WHAT);
+				mHandler.sendMessage(m);
+				m = Message.obtain(mHandler,
+						HIDE_LIST_WHAT);
 				mHandler.sendMessage(m);
 
 				CSCManager cscm = CSCManager.getInstance(mThis);
 				int maxCharts = getMaxCharts();
 				Log.d(getClass().getSimpleName(), "getting up to " + maxCharts);
 				mSites = cscm.getSites(location, maxCharts);
+
 				mHandler
 						.sendMessage(Message.obtain(mHandler, UPDATE_LIST_WHAT));
+				m = Message.obtain(mHandler,
+						SHOW_LIST_WHAT);
+				mHandler.sendMessage(m);
 				mHandler.sendMessage(Message.obtain(mHandler,
 						UPDATE_LOCATION_DIALOG_DISMISS_WHAT));
 			}

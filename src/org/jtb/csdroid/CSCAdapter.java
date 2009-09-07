@@ -62,6 +62,14 @@ public class CSCAdapter extends ArrayAdapter {
 		String region = s.getRegion();
 		label.setText(region + " - " + name);
 
+		TextView ratingLabel = (TextView) view.findViewById(R.id.csc_rating_label);
+		String r = cs.getViewRating().toDisplayString();
+		ratingLabel.setText(r);
+
+		TextView distance = (TextView) view.findViewById(R.id.csc_distance);
+		float d = s.getDistance();
+		distance.setText((int)(d / 1000) + "km");
+
 		ImageView summaryImg = (ImageView) view.findViewById(R.id.csc_summary_img);
 		BufferedInputStream bis;
 		try {

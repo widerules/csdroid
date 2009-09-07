@@ -171,6 +171,9 @@ public class Site implements Serializable {
 	}
 	
 	public boolean matches(String s) {
+		if (s == null || s.length() == 0) {
+			return false;
+		}
 		s = s.toLowerCase();
 		if (nameLc.contains(s)) {
 			return true;
