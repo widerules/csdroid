@@ -45,6 +45,7 @@ public class SearchActivity extends Activity {
 	private ListView mCSCListView;
 	private SearchActivity mThis;
 	private Button mSearchButton;
+	private String lastSearchString = null;
 
 	private Handler mHandler = new Handler() {
 		@Override
@@ -114,6 +115,13 @@ public class SearchActivity extends Activity {
 	public void search() {
 		new Thread(new Runnable() {
 			public void run() {
+				String searchString = mSearchEdit.getText().toString();
+				if (lastSearchString != null
+						&& searchString.equalsIgnoreCase(lastSearchString)) {
+					return;
+				}
+				lastSearchString = searchString;
+				
 				Message m = Message
 						.obtain(mHandler, SEARCHING_DIALOG_SHOW_WHAT);
 				mHandler.sendMessage(m);

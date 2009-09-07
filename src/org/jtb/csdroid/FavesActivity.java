@@ -102,6 +102,10 @@ public class FavesActivity extends Activity implements
 	public void update() {
 		new Thread(new Runnable() {
 			public void run() {
+				if (mSites != null) {
+					return;
+				}
+				
 				Message m = Message.obtain(mHandler, UPDATE_DIALOG_SHOW_WHAT);
 				mHandler.sendMessage(m);
 				m = Message.obtain(mHandler,
@@ -144,6 +148,7 @@ public class FavesActivity extends Activity implements
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
 			String key) {
 		if (key.equals("faves")) {
+			mSites = null;
 			update();
 		}
 	}

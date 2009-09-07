@@ -47,6 +47,9 @@ public class CSCManager {
 	private File cacheDir;
 	private File siteFile;
 	private File siteLocationFile;
+	private LocationManager locationManager;
+	private String locationProvider;
+	private Location dummyLocation;
 
 	private CSCManager(Context context) {
 		this.context = context;
@@ -56,6 +59,13 @@ public class CSCManager {
 		siteFile = new File(cacheDir.toString() + "/" + "chart_prop00.txt");
 		siteLocationFile = new File(cacheDir.toString() + "/"
 				+ "chart_keys00.txt");
+
+		locationManager = (LocationManager) context
+				.getSystemService(Context.LOCATION_SERVICE);
+		locationProvider = locationManager
+				.getBestProvider(new Criteria(), true);
+		dummyLocation = new Location(locationProvider);
+
 	}
 
 	public synchronized static CSCManager getInstance(Context context) {
@@ -67,7 +77,7 @@ public class CSCManager {
 		return manager;
 	}
 
-	public synchronized void refresh() {
+	private synchronized void refresh() {
 		//
 		// only refresh if time stamp doesn't exist or
 		// it was created beyond refresh interval
@@ -274,18 +284,21 @@ public class CSCManager {
 		}
 	}
 
-	public synchronized List<Site> getSites(Location location, int maxSites) {
-		LocationManager lm = (LocationManager) context
-				.getSystemService(Context.LOCATION_SERVICE);
-		String name = lm.getBestProvider(new Criteria(), true);
+	private void setDistance(Location l, Site s) {
+		// TODO: can we avoid this is the distance is already set?
+		// have to take care to update correctly when location
+		// changes
+		
+		dummyLocation.setLatitude(s.getLatitude());
+		dummyLocation.setLongitude(s.getLongitude());
+		float d = l.distanceTo(dummyLocation);
+		s.setDistance(d);
+	}
 
+	public synchronized List<Site> getSites(Location location, int maxSites) {
 		List<Site> sites = new ArrayList<Site>();
 		for (Site s : siteMap.values()) {
-			Location l = new Location(name);
-			l.setLatitude(s.getLatitude());
-			l.setLongitude(s.getLongitude());
-			float dt = location.distanceTo(l);
-			s.setDistance(dt);
+			setDistance(location, s);
 			sites.add(s);
 		}
 		Collections.sort(sites, new Site.DistanceComparator<Site>());
@@ -299,13 +312,14 @@ public class CSCManager {
 	}
 
 	public synchronized List<Site> getSites(String s, int maxSites) {
+		Location location = locationManager
+				.getLastKnownLocation(locationProvider);
+
 		List<Site> sites = new ArrayList<Site>();
 		for (Site site : siteMap.values()) {
 			if (site.matches(s)) {
+				setDistance(location, site);
 				sites.add(site);
-			}
-			if (sites.size() == maxSites) {
-				break;
 			}
 		}
 		Collections.sort(sites, new Site.DistanceComparator<Site>());
@@ -319,13 +333,19 @@ public class CSCManager {
 	}
 
 	public synchronized List<Site> getSites(Collection<String> siteIds) {
+		Location location = locationManager
+				.getLastKnownLocation(locationProvider);
+
 		List<Site> sites = new ArrayList<Site>();
 		for (String id : siteIds) {
 			Site s = siteMap.get(id);
 			if (s == null) {
-				Log.w(getClass().getSimpleName(), "no site found for id: " + id);
+				Log
+						.w(getClass().getSimpleName(), "no site found for id: "
+								+ id);
 				continue;
 			}
+			setDistance(location, s);
 			sites.add(s);
 		}
 		Collections.sort(sites, new Site.DistanceComparator<Site>());

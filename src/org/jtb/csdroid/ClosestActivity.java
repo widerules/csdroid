@@ -58,6 +58,7 @@ public class ClosestActivity extends Activity implements LocationListener {
 	private ClosestActivity mThis;
 	private Timer mTimer = new Timer();
 	private String mRefreshError = null;
+	private Location mLocation = null;
 	
 	private Handler mHandler = new Handler() {
 		@Override
@@ -115,7 +116,9 @@ public class ClosestActivity extends Activity implements LocationListener {
 					"no best location provider returned");
 		}
 		// LocationProvider lp = lm.getProvider(name);
-		onLocationChanged(lm.getLastKnownLocation(name));
+		Location l = lm.getLastKnownLocation(name);
+		onLocationChanged(l);
+		
 		lm.requestLocationUpdates(name, 10 * 60 * 1000, 10 * 1000, mThis); 
 	}
 
@@ -153,6 +156,11 @@ public class ClosestActivity extends Activity implements LocationListener {
 							LOCATION_WAIT_DIALOG_SHOW_WHAT));
 					return;
 				}
+				if (mLocation != null && mLocation.distanceTo(location) < 10) {
+					return;
+				}
+				mLocation = location;
+				
 				if (mLocationWaitDialog != null) {
 					mHandler.sendMessage(Message.obtain(mHandler,
 							LOCATION_WAIT_DIALOG_DISMISS_WHAT));
