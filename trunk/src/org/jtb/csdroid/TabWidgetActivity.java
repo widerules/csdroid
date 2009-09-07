@@ -38,6 +38,7 @@ public class TabWidgetActivity extends TabActivity {
 	private TabHost mTabHost;
 	private View mSearchView;
 	private View mClosestView;
+	private View mFavesView;
 	private TabWidgetActivity mThis;
 
 	private Dialog mInfoDialog = null;
@@ -61,7 +62,6 @@ public class TabWidgetActivity extends TabActivity {
 		}
 	};
 	public static Handler mStaticHandler = null;
-	
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -70,9 +70,6 @@ public class TabWidgetActivity extends TabActivity {
 
 		mThis = this;
 		mStaticHandler = mHandler;
-		
-		mSearchView = findViewById(R.id.search);
-		mClosestView = findViewById(R.id.closest);
 
 		mTabHost = getTabHost();
 		mTabHost.addTab(mTabHost.newTabSpec("closest").setIndicator("Closest",
@@ -81,19 +78,45 @@ public class TabWidgetActivity extends TabActivity {
 		mTabHost.addTab(mTabHost.newTabSpec("search").setIndicator("Search",
 				getResources().getDrawable(R.drawable.search)).setContent(
 				new Intent(this, SearchActivity.class)));
+		mTabHost.addTab(mTabHost.newTabSpec("faves").setIndicator("Favorites",
+				getResources().getDrawable(R.drawable.edit)).setContent(
+				new Intent(this, FavesActivity.class)));
 
 		String currentTab = getCurrentTab();
-		setTabsVisible(currentTab);
-
 		mTabHost.setCurrentTabByTag(currentTab);
+		
 		mTabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
 			public void onTabChanged(String tabId) {
 				setCurrentTab(tabId);
-				setTabsVisible(tabId);
+				updateActivity();
 			}
 		});
-		
+
 		startService();
+	}
+
+	private void updateActivity() {
+		String tabId = getCurrentTab();
+		
+		if (tabId.equals("closest")) {
+			Handler h = ClosestActivity.mStaticHandler;
+			if (h != null) {
+				h.sendMessage(ClosestActivity.mStaticHandler
+						.obtainMessage(ClosestActivity.UPDATE_WHAT));
+			}
+		} else if (tabId.equals("search")) {
+			Handler h = SearchActivity.mStaticHandler;
+			if (h != null) {
+				h.sendMessage(SearchActivity.mStaticHandler
+						.obtainMessage(SearchActivity.UPDATE_WHAT));
+			}
+		} else if (tabId.equals("faves")) {
+			Handler h = FavesActivity.mStaticHandler;
+			if (h != null) {
+				h.sendMessage(FavesActivity.mStaticHandler
+						.obtainMessage(FavesActivity.UPDATE_WHAT));
+			}
+		}
 	}
 
 	private void setCurrentTab(String tabId) {
@@ -110,16 +133,6 @@ public class TabWidgetActivity extends TabActivity {
 				.getDefaultSharedPreferences(mThis.getBaseContext());
 		String currentTab = prefs.getString("currentTab", "closest");
 		return currentTab;
-	}
-
-	private void setTabsVisible(String tabId) {
-		if (tabId.equals("closest")) {
-			mClosestView.setVisibility(View.VISIBLE);
-			mSearchView.setVisibility(View.GONE);
-		} else if (tabId.equals("search")) {
-			mClosestView.setVisibility(View.GONE);
-			mSearchView.setVisibility(View.VISIBLE);
-		}
 	}
 
 	@Override
@@ -157,22 +170,9 @@ public class TabWidgetActivity extends TabActivity {
 		switch (requestCode) {
 		case PREFS_REQUEST:
 			if (resultCode == PrefsActivity.CHANGED_RESULT) {
-				updateActivities();
+				updateActivity();
 			}
 			break;
-		}
-	}
-
-	private void updateActivities() {
-		Handler h = ClosestActivity.mStaticHandler;
-		if (h != null) {
-			h.sendMessage(ClosestActivity.mStaticHandler
-					.obtainMessage(ClosestActivity.UPDATE_WHAT));
-		}
-		h = SearchActivity.mStaticHandler;
-		if (h != null) {
-			h.sendMessage(SearchActivity.mStaticHandler
-					.obtainMessage(SearchActivity.UPDATE_WHAT));
 		}
 	}
 
@@ -184,12 +184,7 @@ public class TabWidgetActivity extends TabActivity {
 				CSCManager.getInstance(mThis);
 				mHandler.sendMessage(Message.obtain(mHandler,
 						SERVICE_START_DIALOG_DISMISS_WHAT));
-
-				CSCManager.getInstance(mThis);
-				updateActivities();
-				
-				Intent i = new Intent(mThis, CSCService.class);
-				mThis.startService(i);
+				updateActivity();
 			}
 		}).start();
 	}

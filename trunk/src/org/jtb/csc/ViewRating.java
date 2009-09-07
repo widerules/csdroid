@@ -3,20 +3,18 @@ package org.jtb.csc;
 import android.graphics.Color;
 
 public enum ViewRating {
-    EXCELLENT(3, Color.parseColor("#009900"), Color.parseColor("#ffffff")),
-    GOOD(2, Color.parseColor("#99ff00"), Color.parseColor("#ffffff")), 
-    FAIR(1, Color.parseColor("#ffff00"), Color.parseColor("#ffffff")),
-    POOR(0, Color.parseColor("#FF0000"), Color.parseColor("#ffffff")),
-    NONE(-1, Color.parseColor("#333333"), Color.parseColor("#ffffff"));
+    EXCELLENT("Excellent", Color.parseColor("#009900")),
+    GOOD("Good", Color.parseColor("#99ff00")), 
+    FAIR("Fair", Color.parseColor("#ffff00")),
+    POOR("Poor", Color.parseColor("#FF0000")),
+    NONE("None", Color.parseColor("#333333"));
 
-    private int i;
     private int color;
-    private int selectedColor;
+    private String displayString;
     
-    private ViewRating(int i, int color, int selectedColor) {
-        this.i = i;
+    private ViewRating(String displayString, int color) {
+    	this.displayString = displayString;
         this.color = color;
-        this.selectedColor = selectedColor;
     }
 
     public static ViewRating valueOf(int rating) {
@@ -38,29 +36,11 @@ public enum ViewRating {
         throw new AssertionError("invalid rating value: " + rating);
     }
 
-    public int toInt() {
-        return i;
-    }
-
     public int getColor() {
     	return color;
     }
-
-	public int getSelectedColor() {
-		return selectedColor;
-	}
     
-    /*
-    @Override
-    public int compareTo(Object o) {
-        ViewRating other = (ViewRating)o;
-        if (i == other.i) {
-            return 0;
-        }
-        if (i > other.i) {
-            return 1;
-        }
-        return -1;
+    public String toDisplayString() {
+    	return displayString;
     }
-     */
 }

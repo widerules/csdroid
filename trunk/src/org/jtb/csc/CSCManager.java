@@ -15,6 +15,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Date;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,7 +38,6 @@ public class CSCManager {
 
 	private static final String SITE_URL = "http://cleardarksky.com/t/chart_prop00.txt";
 	private static final String SITE_LOCATION_URL = "http://cleardarksky.com/t/chart_keys00.txt";
-	private static final String CONDITIONS_URL_PREFIX = "http://cleardarksky.com/txtc/";
 
 	private static CSCManager manager;
 
@@ -96,6 +96,7 @@ public class CSCManager {
 				readUrl(SITE_LOCATION_URL, siteLocationFile, 16384);
 				loadSites();
 			} catch (Throwable t) {
+				// TODO: move to tabwidget
 				ClosestActivity.mStaticHandler.sendMessage(Message
 						.obtain(ClosestActivity.mStaticHandler,
 								ClosestActivity.REFRESH_ERROR_SHOW_WHAT, t
@@ -307,6 +308,27 @@ public class CSCManager {
 				break;
 			}
 		}
+		Collections.sort(sites, new Site.DistanceComparator<Site>());
+		sites = sites.subList(0, Math.min(sites.size(), maxSites));
+
+		readSummaryImages(sites);
+		readConditions(sites);
+		getConditions(sites);
+
+		return sites;
+	}
+
+	public synchronized List<Site> getSites(Collection<String> siteIds) {
+		List<Site> sites = new ArrayList<Site>();
+		for (String id : siteIds) {
+			Site s = siteMap.get(id);
+			if (s == null) {
+				Log.w(getClass().getSimpleName(), "no site found for id: " + id);
+				continue;
+			}
+			sites.add(s);
+		}
+		Collections.sort(sites, new Site.DistanceComparator<Site>());
 
 		readSummaryImages(sites);
 		readConditions(sites);

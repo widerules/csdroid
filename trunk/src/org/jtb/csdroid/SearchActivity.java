@@ -33,6 +33,8 @@ public class SearchActivity extends Activity {
 	public static final int SEARCHING_DIALOG_DISMISS_WHAT = 1;
 	public static final int UPDATE_LIST_WHAT = 2;
 	public static final int UPDATE_WHAT = 3;
+	static final int HIDE_LIST_WHAT = 16;
+	static final int SHOW_LIST_WHAT = 17;
 
 	private ProgressDialog mSearchingDialog;
 	private Dialog mInfoDialog;
@@ -60,11 +62,16 @@ public class SearchActivity extends Activity {
 			case SEARCHING_DIALOG_DISMISS_WHAT:
 				dismissDialog(SEARCHING_DIALOG);
 				break;
+			case HIDE_LIST_WHAT:
+				mCSCListView.setVisibility(View.GONE);
+				break;
+			case SHOW_LIST_WHAT:
+				mCSCListView.setVisibility(View.VISIBLE);
+				break;
 			}
 		}
 	};
 	public static Handler mStaticHandler = null;
-
 
 	private void updateList() {
 		if (mSites != null) {
@@ -80,7 +87,7 @@ public class SearchActivity extends Activity {
 
 		mThis = this;
 		mStaticHandler = mHandler;
-		
+
 		mSearchButton = (Button) findViewById(R.id.search_button);
 		mSearchButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
@@ -92,23 +99,25 @@ public class SearchActivity extends Activity {
 		mCSCListView.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View v,
 					int position, long id) {
-				AlertDialog.Builder builder = new ListClickDialog.Builder(mThis, mSites, position);
+				AlertDialog.Builder builder = new ListClickDialog.Builder(
+						mThis, mSites, position);
 				mListClickDialog = builder.create();
 				mListClickDialog.show();
 			}
 		});
 	}
-	
+
 	public void update() {
-		mSites = new ArrayList<Site>();
-		updateList();
+		search();
 	}
-	
+
 	public void search() {
 		new Thread(new Runnable() {
 			public void run() {
 				Message m = Message
 						.obtain(mHandler, SEARCHING_DIALOG_SHOW_WHAT);
+				mHandler.sendMessage(m);
+				m = Message.obtain(mHandler, HIDE_LIST_WHAT);
 				mHandler.sendMessage(m);
 
 				CSCManager cscm = CSCManager.getInstance(mThis);
@@ -116,6 +125,8 @@ public class SearchActivity extends Activity {
 						getMaxCharts());
 				mHandler
 						.sendMessage(Message.obtain(mHandler, UPDATE_LIST_WHAT));
+				m = Message.obtain(mHandler, SHOW_LIST_WHAT);
+				mHandler.sendMessage(m);
 				mHandler.sendMessage(Message.obtain(mHandler,
 						SEARCHING_DIALOG_DISMISS_WHAT));
 			}

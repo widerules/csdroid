@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="org.jtb.csdroid" android:versionCode="8" android:versionName="0.5">
+	package="org.jtb.csdroid" android:versionCode="11" android:versionName="1.0.2">
 	<application android:icon="@drawable/icon" android:label="@string/app_name">
 		<activity android:name=".TabWidgetActivity" android:launchMode="singleTop"
 			android:label="@string/app_name">
@@ -11,10 +11,10 @@
 		</activity>
 		<activity android:name=".ClosestActivity" android:launchMode="singleTop"/>
 		<activity android:name=".SearchActivity" android:launchMode="singleTop"/>
+		<activity android:name=".FavesActivity" android:launchMode="singleTop"/>
 		<activity android:name=".DetailActivity" android:launchMode="singleTop"
 			android:screenOrientation="landscape"/>
 		<activity android:name=".PrefsActivity"/>
-		<service android:name=".CSCService" />
 	</application>
 	<uses-sdk android:minSdkVersion="3" />
 	<uses-permission android:name="android.permission.INTERNET" />
