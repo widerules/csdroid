@@ -112,10 +112,18 @@ public class Site implements Serializable {
 		return latitude;
 	}
 
+	public int getLatitudeE6() {
+		return (int) (latitude*Math.pow(10, 6));
+	}
+
 	public void setLongitude(double longitude) {
 		this.longitude = longitude;
 	}
 
+	public int getLongitudeE6() {
+		return (int) (longitude*Math.pow(10, 6));
+	}
+	
 	public double getLongitude() {
 		return longitude;
 	}

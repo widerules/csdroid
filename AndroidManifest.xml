@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="org.jtb.csdroid" android:versionCode="12" android:versionName="1.0.3">
+	package="org.jtb.csdroid" android:versionCode="13" android:versionName="1.0.4">
 	<application android:icon="@drawable/icon" android:label="@string/app_name">
-		<activity android:name=".TabWidgetActivity" android:launchMode="singleTop"
-			android:label="@string/app_name">
+		<uses-library android:name="com.google.android.maps" />
+		<activity android:name=".TabWidgetActivity"
+			android:launchMode="singleTop" android:label="@string/app_name">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
-		<activity android:name=".ClosestActivity" android:launchMode="singleTop"/>
-		<activity android:name=".SearchActivity" android:launchMode="singleTop"/>
-		<activity android:name=".FavesActivity" android:launchMode="singleTop"/>
+		<activity android:name=".ClosestActivity" android:launchMode="singleTop" />
+		<activity android:name=".SearchActivity" android:launchMode="singleTop" />
+		<activity android:name=".FavesActivity" android:launchMode="singleTop" />
 		<activity android:name=".DetailActivity" android:launchMode="singleTop"
-			android:screenOrientation="landscape"/>
-		<activity android:name=".PrefsActivity"/>
+			android:screenOrientation="landscape" />
+		<activity android:name=".PrefsActivity" />
+		<activity android:name=".CSCMapActivity" />
 	</application>
 	<uses-sdk android:minSdkVersion="3" />
 	<uses-permission android:name="android.permission.INTERNET" />

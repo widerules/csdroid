@@ -36,8 +36,12 @@ public class ListClickDialog extends AlertDialog {
 						ad.getContext().startActivity(i);
 						break;
 					case 1: 
-						String uri = "geo:"+ s.getLatitude() + "," + s.getLongitude() + "?z=16";  
-						ad.getContext().startActivity(new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(uri))); 	
+						i = new Intent(ad.getContext(), CSCMapActivity.class);
+						i.putExtra("org.jtb.csdroid.site.id", s.getId());
+						ad.getContext().startActivity(i);
+
+						//String uri = "geo:"+ s.getLatitude() + "," + s.getLongitude() + "?z=16";  
+						//ad.getContext().startActivity(new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(uri))); 	
 						break;
 					case 2:
 						SharedPreferences prefs = PreferenceManager
