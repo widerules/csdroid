@@ -2,6 +2,7 @@ package org.jtb.csc;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,6 +40,7 @@ public class Site implements Serializable {
     }
     
     public Site(File cacheDir, String line) {
+    	/*
         Matcher m = SITE_PATTERN.matcher(line);
 
         if (!m.matches()) {
@@ -50,6 +52,14 @@ public class Site implements Serializable {
         regionLc = region.toLowerCase();
         name = m.group(3);
         nameLc = name.toLowerCase();
+		*/
+    	
+    	ArrayList<String> tokens = CSVParser.parse(line);
+    	id = tokens.get(0);
+    	region = tokens.get(1);
+    	regionLc = region.toLowerCase();
+    	name = tokens.get(2);
+    	nameLc = name.toLowerCase();
         
         this.cacheDir = cacheDir;
     }

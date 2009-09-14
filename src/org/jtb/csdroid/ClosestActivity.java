@@ -156,9 +156,6 @@ public class ClosestActivity extends Activity implements LocationListener {
 							LOCATION_WAIT_DIALOG_SHOW_WHAT));
 					return;
 				}
-				if (mLocation != null && mLocation.distanceTo(location) < 10) {
-					return;
-				}
 				mLocation = location;
 				
 				if (mLocationWaitDialog != null) {

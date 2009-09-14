@@ -36,7 +36,7 @@ public class Conditions {
 			// version
 			br.readLine();
 			// UTC offset
-			// assume we are in same offset a chart. 
+			// assume we are in same offset as chart. 
 			// this is probably the case, but if not 
 			// it only effects the rating
 			line = br.readLine();

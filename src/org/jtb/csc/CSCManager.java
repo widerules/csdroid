@@ -12,13 +12,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.SocketException;
 import java.net.URL;
-import java.util.Collection;
-import java.util.Date;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +27,6 @@ import android.content.Context;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
-import android.location.LocationProvider;
 import android.os.Message;
 import android.util.Log;
 
@@ -152,6 +149,7 @@ public class CSCManager {
 		BufferedReader br = null;
 
 		try {
+			BlockTimer bt = new BlockTimer();
 			is = new FileInputStream(siteFile);
 			br = new BufferedReader(new InputStreamReader(is, "ISO-8859-1"),
 					16384);
@@ -165,6 +163,8 @@ public class CSCManager {
 			}
 			Log.d(this.getClass().getSimpleName(), "read "
 					+ siteMap.keySet().size() + " sites");
+			Log.d(getClass().getSimpleName(), "took: " + bt.elapsed()
+					+ "ms to load sites");
 		} catch (IOException ioe) {
 			Log.e(getClass().getSimpleName(), "error loading sites file", ioe);
 			return;
@@ -187,6 +187,8 @@ public class CSCManager {
 		BufferedReader br = null;
 
 		try {
+			BlockTimer bt = new BlockTimer();
+
 			is = new FileInputStream(siteLocationFile);
 			br = new BufferedReader(new InputStreamReader(is, "ISO-8859-1"),
 					16384);
@@ -205,11 +207,14 @@ public class CSCManager {
 						Log.d(this.getClass().getSimpleName(),
 								"no site found for site location id: \""
 										+ sl.getId() + "\", ignoring");
+
 					} else {
 						s.setSiteLocation(sl);
 					}
 				}
 			}
+			Log.d(getClass().getSimpleName(), "took: " + bt.elapsed()
+					+ "ms to load site locations");
 		} catch (IOException ioe) {
 			Log.e(getClass().getSimpleName(),
 					"error loading site locations file", ioe);
@@ -288,7 +293,7 @@ public class CSCManager {
 		// TODO: can we avoid this is the distance is already set?
 		// have to take care to update correctly when location
 		// changes
-		
+
 		dummyLocation.setLatitude(s.getLatitude());
 		dummyLocation.setLongitude(s.getLongitude());
 		float d = l.distanceTo(dummyLocation);
@@ -306,7 +311,10 @@ public class CSCManager {
 
 		readSummaryImages(sites);
 		readConditions(sites);
+		BlockTimer bt = new BlockTimer();
 		getConditions(sites);
+		Log.d(getClass().getSimpleName(), "took: " + bt.elapsed()
+				+ "ms to get conditions");
 
 		return sites;
 	}
