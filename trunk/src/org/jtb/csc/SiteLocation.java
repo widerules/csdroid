@@ -1,5 +1,6 @@
 package org.jtb.csc;
 
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,6 +17,7 @@ class SiteLocation {
 	private boolean locatable = true;
 
 	public SiteLocation(String line) {
+		/*
 		Matcher m = SITE_LOCATION_PATTERN.matcher(line);
 		if (m.matches()) {
 			id = m.group(1);
@@ -29,6 +31,19 @@ class SiteLocation {
 			locatable = false;
 			id = m.group(1);
 			region = m.group(2);
+		}
+		*/
+		
+		ArrayList<String> tokens = CSVParser.parse(line);
+		if (tokens.size() == 2) {
+			locatable = false;
+			id = tokens.get(0);
+			region = tokens.get(1);
+		} else {
+			id = tokens.get(0);
+			region = tokens.get(1);			
+			latitude = Double.parseDouble(tokens.get(2));
+			longitude = Double.parseDouble(tokens.get(3));
 		}
 	}
 
