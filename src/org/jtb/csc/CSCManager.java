@@ -36,7 +36,7 @@ public class CSCManager {
 	private static final String SITE_URL = "http://cleardarksky.com/t/chart_prop00.txt";
 	private static final String SITE_LOCATION_URL = "http://cleardarksky.com/t/chart_keys00.txt";
 
-	private static CSCManager manager;
+private static CSCManager manager;
 
 	private Context context;
 	private Map<String, Site> siteMap = null;
@@ -45,8 +45,6 @@ public class CSCManager {
 	private File siteFile;
 	private File siteLocationFile;
 	private LocationManager locationManager;
-	private String locationProvider;
-	private Location dummyLocation;
 
 	private CSCManager(Context context) {
 		this.context = context;
@@ -59,10 +57,6 @@ public class CSCManager {
 
 		locationManager = (LocationManager) context
 				.getSystemService(Context.LOCATION_SERVICE);
-		locationProvider = locationManager
-				.getBestProvider(new Criteria(), true);
-		dummyLocation = new Location(locationProvider);
-
 	}
 
 	public synchronized static CSCManager getInstance(Context context) {
@@ -74,6 +68,14 @@ public class CSCManager {
 		return manager;
 	}
 
+	private Location getLastKnownLocation() {
+		Location location = locationManager
+		.getLastKnownLocation(locationManager
+				.getBestProvider(new Criteria(), true));
+		
+		return location;
+		
+	}
 	private synchronized void refresh() {
 		//
 		// only refresh if time stamp doesn't exist or
@@ -290,14 +292,9 @@ public class CSCManager {
 	}
 
 	private void setDistance(Location l, Site s) {
-		// TODO: can we avoid this is the distance is already set?
-		// have to take care to update correctly when location
-		// changes
-
-		dummyLocation.setLatitude(s.getLatitude());
-		dummyLocation.setLongitude(s.getLongitude());
-		float d = l.distanceTo(dummyLocation);
-		s.setDistance(d);
+		float[] results = new float[3];
+		Location.distanceBetween(l.getLatitude(), l.getLongitude(), s.getLatitude(), s.getLongitude(), results);
+		s.setDistance(results[0]);
 	}
 
 	public synchronized List<Site> getSites(Location location, int maxSites) {
@@ -320,8 +317,7 @@ public class CSCManager {
 	}
 
 	public synchronized List<Site> getSites(String s, int maxSites) {
-		Location location = locationManager
-				.getLastKnownLocation(locationProvider);
+		Location location = getLastKnownLocation();
 
 		List<Site> sites = new ArrayList<Site>();
 		for (Site site : siteMap.values()) {
@@ -341,8 +337,7 @@ public class CSCManager {
 	}
 
 	public synchronized List<Site> getSites(Collection<String> siteIds) {
-		Location location = locationManager
-				.getLastKnownLocation(locationProvider);
+		Location location = getLastKnownLocation();
 
 		List<Site> sites = new ArrayList<Site>();
 		for (String id : siteIds) {
