@@ -3,11 +3,11 @@ package org.jtb.csc;
 import android.graphics.Color;
 
 public enum ViewRating {
-    EXCELLENT("Excellent", Color.parseColor("#009900")),
-    GOOD("Good", Color.parseColor("#99ff00")), 
-    FAIR("Fair", Color.parseColor("#ffff00")),
+    NONE("None", Color.parseColor("#333333")),
     POOR("Poor", Color.parseColor("#FF0000")),
-    NONE("None", Color.parseColor("#333333"));
+    FAIR("Fair", Color.parseColor("#ffff00")),
+    GOOD("Good", Color.parseColor("#99ff00")), 
+    EXCELLENT("Excellent", Color.parseColor("#009900"));
 
     private int color;
     private String displayString;
@@ -21,16 +21,16 @@ public enum ViewRating {
         if (rating == -1) {
             return NONE;
         }
-        if (rating >= 0 && rating <= 14) {
+        if (rating >= 0 && rating <= 10) {
             return POOR;
         }
-        if (rating >= 15 && rating <= 17) {
+        if (rating >= 11 && rating <= 15) {
             return FAIR;
         }
-        if (rating >= 18 && rating <= 19) {
+        if (rating >= 16 && rating <= 18) {
             return GOOD;
         }
-        if (rating >= 20 && rating <= 20) {
+        if (rating >= 19 && rating <= 20) {
             return EXCELLENT;
         }
         throw new AssertionError("invalid rating value: " + rating);
