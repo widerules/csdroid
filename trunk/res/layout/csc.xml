@@ -9,6 +9,7 @@
 		android:paddingLeft="4px">
 		<TableRow android:id="@+id/csc_text_row">
 			<TextView android:text="TestRegion - Test Chart Name"
+				android:textStyle="bold"
 				android:id="@+id/csc_label" android:textSize="16px"
 				android:layout_width="fill_parent" android:layout_height="wrap_content" />
 		</TableRow>
@@ -18,7 +19,9 @@
 				<TableRow>
 					<TextView android:id="@+id/csc_rating_label" android:text="Poor" android:textSize="10px"
 						android:layout_width="fill_parent" android:layout_height="wrap_content" />
-					<TextView android:id="@+id/csc_distance" android:text="123km" android:paddingLeft="4px"
+					<TextView android:text=" conditions, " android:textSize="10px"
+						android:layout_width="fill_parent" android:layout_height="wrap_content" />
+					<TextView android:id="@+id/csc_distance" android:text="123km"
 						android:layout_width="fill_parent" android:textSize="10px"
 						android:layout_height="wrap_content" />
 				</TableRow>
