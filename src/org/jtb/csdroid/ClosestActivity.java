@@ -1,8 +1,10 @@
 package org.jtb.csdroid;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Timer;
 
+import org.jtb.csc.CSCLocation;
 import org.jtb.csc.CSCManager;
 import org.jtb.csc.Site;
 
@@ -14,7 +16,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Address;
 import android.location.Criteria;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -32,34 +36,35 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
 
-public class ClosestActivity extends Activity implements LocationListener {
+public class ClosestActivity extends Activity {
 	static final int UPDATE_LOCATION_DIALOG_SHOW_WHAT = 0;
 	static final int UPDATE_LOCATION_DIALOG_DISMISS_WHAT = 1;
 	static final int UPDATE_LIST_WHAT = 6;
 	public static final int REFRESH_ERROR_SHOW_WHAT = 10;
 	static final int REFRESH_ERROR_HIDE_WHAT = 11;
-	static final int LOCATION_WAIT_DIALOG_SHOW_WHAT = 12;
-	static final int LOCATION_WAIT_DIALOG_DISMISS_WHAT = 13;
-	static final int UPDATE_WHAT = 15;
+	static final int UNKNOWN_LOCATION_DIALOG_SHOW_WHAT = 12;
+	static final int UNKNOWN_LOCATION_DIALOG_DISMISS_WHAT = 13;
+	static final int INIT_WHAT = 15;
 	static final int HIDE_LIST_WHAT = 16;
 	static final int SHOW_LIST_WHAT = 17;
+	static final int UPDATE_WHAT = 18;
+	static final int RESET_WHAT = 19;
 
 	private static final int UPDATE_LOCATION_DIALOG = 0;
 	private static final int REFRESH_ERROR_DIALOG = 3;
-	private static final int LOCATION_WAIT_DIALOG = 4;
+	private static final int UNKNOWN_LOCATION_DIALOG = 4;
 
 	private ProgressDialog mUpdateLocationDialog;
 	private AlertDialog mRefreshErrorDialog;
 	private AlertDialog mListClickDialog;
-	private ProgressDialog mLocationWaitDialog = null;
+	private AlertDialog mUnknownLocationDialog = null;
 
 	private List<Site> mSites;
 	private ListView mCSCListView;
 	private ClosestActivity mThis;
 	private Timer mTimer = new Timer();
 	private String mRefreshError = null;
-	private Location mLocation = null;
-	
+		
 	private Handler mHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
@@ -69,6 +74,12 @@ public class ClosestActivity extends Activity implements LocationListener {
 				break;
 			case SHOW_LIST_WHAT:
 				mCSCListView.setVisibility(View.VISIBLE);
+				break;
+			case INIT_WHAT:
+				init();
+				break;
+			case RESET_WHAT:
+				mSites = null;
 				break;
 			case UPDATE_WHAT:
 				update();
@@ -82,11 +93,11 @@ public class ClosestActivity extends Activity implements LocationListener {
 			case UPDATE_LOCATION_DIALOG_DISMISS_WHAT:
 				dismissDialog(UPDATE_LOCATION_DIALOG);
 				break;
-			case LOCATION_WAIT_DIALOG_SHOW_WHAT:
-				showDialog(LOCATION_WAIT_DIALOG);
+			case UNKNOWN_LOCATION_DIALOG_SHOW_WHAT:
+				showDialog(UNKNOWN_LOCATION_DIALOG);
 				break;
-			case LOCATION_WAIT_DIALOG_DISMISS_WHAT:
-				dismissDialog(LOCATION_WAIT_DIALOG);
+			case UNKNOWN_LOCATION_DIALOG_DISMISS_WHAT:
+				dismissDialog(UNKNOWN_LOCATION_DIALOG);
 				break;
 			case REFRESH_ERROR_SHOW_WHAT:
 				mRefreshError = (String) msg.obj;
@@ -107,20 +118,6 @@ public class ClosestActivity extends Activity implements LocationListener {
 		}
 	}
 
-	public void update() {
-		LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		String name = lm.getBestProvider(new Criteria(), true);
-		if (name == null) {
-			// TODO: error dialog an exit (this.finish())?
-			Log.e(getClass().getSimpleName(),
-					"no best location provider returned");
-		}
-		// LocationProvider lp = lm.getProvider(name);
-		Location l = lm.getLastKnownLocation(name);
-		onLocationChanged(l);
-		
-		lm.requestLocationUpdates(name, 10 * 60 * 1000, 10 * 1000, mThis); 
-	}
 
 	private int getMaxCharts() {
 		SharedPreferences prefs = PreferenceManager
@@ -147,23 +144,16 @@ public class ClosestActivity extends Activity implements LocationListener {
 			}
 		});	
 	}
+	
+	private void init() {
+		if (mSites == null) {
+			update();
+		}
+	}	
 
-	public void onLocationChanged(final Location location) {
+	private void update() {
 		new Thread(new Runnable() {
 			public void run() {
-				if (location == null) {
-					mHandler.sendMessage(Message.obtain(mHandler,
-							LOCATION_WAIT_DIALOG_SHOW_WHAT));
-					return;
-				}
-				mLocation = location;
-				
-				if (mLocationWaitDialog != null) {
-					mHandler.sendMessage(Message.obtain(mHandler,
-							LOCATION_WAIT_DIALOG_DISMISS_WHAT));
-					mLocationWaitDialog = null;
-				}
-				
 				Message m = Message.obtain(mHandler,
 						UPDATE_LOCATION_DIALOG_SHOW_WHAT);
 				mHandler.sendMessage(m);
@@ -174,7 +164,7 @@ public class ClosestActivity extends Activity implements LocationListener {
 				CSCManager cscm = CSCManager.getInstance(mThis);
 				int maxCharts = getMaxCharts();
 				Log.d(getClass().getSimpleName(), "getting up to " + maxCharts);
-				mSites = cscm.getSites(location, maxCharts);
+				mSites = cscm.getSites(TabWidgetActivity.mLocation, maxCharts);
 
 				mHandler
 						.sendMessage(Message.obtain(mHandler, UPDATE_LIST_WHAT));
@@ -185,18 +175,6 @@ public class ClosestActivity extends Activity implements LocationListener {
 						UPDATE_LOCATION_DIALOG_DISMISS_WHAT));
 			}
 		}).start();
-	}
-
-	public void onProviderDisabled(String provider) {
-		// TODO Auto-generated method stub
-	}
-
-	public void onProviderEnabled(String provider) {
-		// TODO Auto-generated method stub
-	}
-
-	public void onStatusChanged(String provider, int status, Bundle extras) {
-		// TODO Auto-generated method stub
 	}
 
 	protected Dialog onCreateDialog(int id) {
@@ -222,13 +200,17 @@ public class ClosestActivity extends Activity implements LocationListener {
 			mRefreshErrorDialog = builder.create();
 			return mRefreshErrorDialog;
 		}
-		case LOCATION_WAIT_DIALOG: {
-			mLocationWaitDialog = new ProgressDialog(this);
-			mLocationWaitDialog.setIndeterminate(true);
-			mLocationWaitDialog.setMessage("Waiting for location. "
-					+ "You may want to enable GPS, "
-					+ "WiFi, or ensure you have a strong cell signal.");
-			return mLocationWaitDialog;
+		case UNKNOWN_LOCATION_DIALOG: {
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setMessage("Cannot determine your location. You may want to enable GPS and / or network based location services, or use Menu>Go to Zip");
+			builder.setNeutralButton(R.string.ok,
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							dismissDialog(UNKNOWN_LOCATION_DIALOG);
+						}
+					});
+			mUnknownLocationDialog = builder.create();
+			return mUnknownLocationDialog;
 		}
 		}
 		return null;

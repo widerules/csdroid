@@ -8,4 +8,6 @@
 <string name="yes">Yes</string>
 <string name="no">No</string>
 <string name="prefs_menu">Preferences</string>
+<string name="address_menu">Go to Address</string>
+<string name="my_location_menu">My Location</string>
 </resources>

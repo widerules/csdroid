@@ -27,12 +27,14 @@ public class FavesActivity extends Activity implements
 		OnSharedPreferenceChangeListener {
 	private static final int UPDATE_DIALOG = 0;
 
-	static final int UPDATE_WHAT = 0;
+	static final int INIT_WHAT = 0;
 	static final int UPDATE_DIALOG_SHOW_WHAT = 1;
 	static final int UPDATE_DIALOG_DISMISS_WHAT = 2;
 	static final int UPDATE_LIST_WHAT = 4;
 	static final int HIDE_LIST_WHAT = 16;
 	static final int SHOW_LIST_WHAT = 17;
+	static final int UPDATE_WHAT = 18;
+	static final int RESET_WHAT = 19;
 
 	private List<Site> mSites;
 	private ListView mCSCListView;
@@ -45,6 +47,12 @@ public class FavesActivity extends Activity implements
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
+			case INIT_WHAT:
+				init();
+				break;
+			case RESET_WHAT:
+				mSites = null;
+				break;
 			case UPDATE_WHAT:
 				update();
 				break;
@@ -98,14 +106,16 @@ public class FavesActivity extends Activity implements
 			mCSCListView.setAdapter(csca);
 		}
 	}
+	
+	private void init() {
+		if (mSites == null) {
+			update();
+		}
+	}	
 
-	public void update() {
+	private void update() {
 		new Thread(new Runnable() {
 			public void run() {
-				if (mSites != null) {
-					return;
-				}
-				
 				Message m = Message.obtain(mHandler, UPDATE_DIALOG_SHOW_WHAT);
 				mHandler.sendMessage(m);
 				m = Message.obtain(mHandler,
@@ -118,7 +128,7 @@ public class FavesActivity extends Activity implements
 				Faves faves = new Faves(f);
 
 				mSites = CSCManager.getInstance(getBaseContext()).getSites(
-						faves.getFaves());
+						TabWidgetActivity.mLocation, faves.getFaves());
 				m = Message.obtain(mHandler, UPDATE_LIST_WHAT);
 				mHandler.sendMessage(m);
 

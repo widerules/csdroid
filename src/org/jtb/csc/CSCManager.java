@@ -36,9 +36,8 @@ public class CSCManager {
 	private static final String SITE_URL = "http://cleardarksky.com/t/chart_prop00.txt";
 	private static final String SITE_LOCATION_URL = "http://cleardarksky.com/t/chart_keys00.txt";
 
-private static CSCManager manager;
+	private static CSCManager manager;
 
-	private Context context;
 	private Map<String, Site> siteMap = null;
 	private Map<String, Conditions> conditionsMap = new HashMap<String, Conditions>();
 	private File cacheDir;
@@ -47,7 +46,6 @@ private static CSCManager manager;
 	private LocationManager locationManager;
 
 	private CSCManager(Context context) {
-		this.context = context;
 		// cacheDir = context.getCacheDir();
 		cacheDir = context.getDir("csc", Context.MODE_PRIVATE);
 		Log.d(getClass().getSimpleName(), "using cache dir: " + cacheDir);
@@ -68,14 +66,6 @@ private static CSCManager manager;
 		return manager;
 	}
 
-	private Location getLastKnownLocation() {
-		Location location = locationManager
-		.getLastKnownLocation(locationManager
-				.getBestProvider(new Criteria(), true));
-		
-		return location;
-		
-	}
 	private synchronized void refresh() {
 		//
 		// only refresh if time stamp doesn't exist or
@@ -291,13 +281,21 @@ private static CSCManager manager;
 		}
 	}
 
-	private void setDistance(Location l, Site s) {
+	private void setDistance(CSCLocation l, Site s) {
+		if (l == null) {
+			s.setLatitude(-1);
+			s.setLongitude(-1);
+			
+			return;
+		}
+		
 		float[] results = new float[3];
-		Location.distanceBetween(l.getLatitude(), l.getLongitude(), s.getLatitude(), s.getLongitude(), results);
+		Location.distanceBetween(l.getLatitude(), l.getLongitude(), s
+				.getLatitude(), s.getLongitude(), results);
 		s.setDistance(results[0]);
 	}
 
-	public synchronized List<Site> getSites(Location location, int maxSites) {
+	public synchronized List<Site> getSites(CSCLocation location, int maxSites) {
 		List<Site> sites = new ArrayList<Site>();
 		for (Site s : siteMap.values()) {
 			setDistance(location, s);
@@ -316,9 +314,8 @@ private static CSCManager manager;
 		return sites;
 	}
 
-	public synchronized List<Site> getSites(String s, int maxSites) {
-		Location location = getLastKnownLocation();
-
+	public synchronized List<Site> getSites(CSCLocation location, String s,
+			int maxSites) {
 		List<Site> sites = new ArrayList<Site>();
 		for (Site site : siteMap.values()) {
 			if (site.matches(s)) {
@@ -337,8 +334,11 @@ private static CSCManager manager;
 	}
 
 	public synchronized List<Site> getSites(Collection<String> siteIds) {
-		Location location = getLastKnownLocation();
+		return getSites(null, siteIds);
+	}
 
+	public synchronized List<Site> getSites(CSCLocation location,
+			Collection<String> siteIds) {
 		List<Site> sites = new ArrayList<Site>();
 		for (String id : siteIds) {
 			Site s = siteMap.get(id);
@@ -348,6 +348,7 @@ private static CSCManager manager;
 								+ id);
 				continue;
 			}
+			
 			setDistance(location, s);
 			sites.add(s);
 		}
