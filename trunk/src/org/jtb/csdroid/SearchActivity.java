@@ -29,10 +29,12 @@ public class SearchActivity extends Activity {
 	private static final int INFO_DIALOG = 1;
 	private static final int LIST_CLICK_DIALOG = 3;
 
-	public static final int SEARCHING_DIALOG_SHOW_WHAT = 0;
-	public static final int SEARCHING_DIALOG_DISMISS_WHAT = 1;
-	public static final int UPDATE_LIST_WHAT = 2;
-	public static final int UPDATE_WHAT = 3;
+	static final int SEARCHING_DIALOG_SHOW_WHAT = 0;
+	static final int SEARCHING_DIALOG_DISMISS_WHAT = 1;
+	static final int UPDATE_LIST_WHAT = 2;
+	static final int INIT_WHAT = 3;
+	static final int UPDATE_WHAT = 4;
+	static final int RESET_WHAT = 5;
 	static final int HIDE_LIST_WHAT = 16;
 	static final int SHOW_LIST_WHAT = 17;
 
@@ -45,12 +47,18 @@ public class SearchActivity extends Activity {
 	private ListView mCSCListView;
 	private SearchActivity mThis;
 	private Button mSearchButton;
-	private String lastSearchString = null;
+	private String lastSearchString = "";
 
 	private Handler mHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
+			case INIT_WHAT:
+				init();
+				break;
+			case RESET_WHAT:
+				mSites = null;
+				break;
 			case UPDATE_WHAT:
 				update();
 				break;
@@ -92,7 +100,7 @@ public class SearchActivity extends Activity {
 		mSearchButton = (Button) findViewById(R.id.search_button);
 		mSearchButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				search();
+				update();
 			}
 		});
 		mSearchEdit = (EditText) findViewById(R.id.search_edit);
@@ -108,20 +116,22 @@ public class SearchActivity extends Activity {
 		});
 	}
 
-	public void update() {
-		search();
+	private void init() {
+		if (mSites == null) {
+			update();
+		}
 	}
-
-	public void search() {
+	
+	private void update() {
 		new Thread(new Runnable() {
 			public void run() {
 				String searchString = mSearchEdit.getText().toString();
-				if (lastSearchString != null
-						&& searchString.equalsIgnoreCase(lastSearchString)) {
+				if (searchString == null || searchString.trim().length() == 0
+						|| searchString.equalsIgnoreCase(lastSearchString)) {
 					return;
 				}
 				lastSearchString = searchString;
-				
+
 				Message m = Message
 						.obtain(mHandler, SEARCHING_DIALOG_SHOW_WHAT);
 				mHandler.sendMessage(m);
@@ -129,8 +139,8 @@ public class SearchActivity extends Activity {
 				mHandler.sendMessage(m);
 
 				CSCManager cscm = CSCManager.getInstance(mThis);
-				mSites = cscm.getSites(mSearchEdit.getText().toString(),
-						getMaxCharts());
+				mSites = cscm.getSites(TabWidgetActivity.mLocation, mSearchEdit
+						.getText().toString(), getMaxCharts());
 				mHandler
 						.sendMessage(Message.obtain(mHandler, UPDATE_LIST_WHAT));
 				m = Message.obtain(mHandler, SHOW_LIST_WHAT);
