@@ -311,6 +311,7 @@ public class TabWidgetActivity extends TabActivity {
 				setAddress("");
 				resetActivities();
 				updateActivity();
+				mTabHost.setCurrentTabByTag("closest");														
 			} else {
 				showDialog(LOCATION_ERROR_DIALOG);
 			}
@@ -403,6 +404,7 @@ public class TabWidgetActivity extends TabActivity {
 										setAddress(address);
 										resetActivities();
 										updateActivity();
+										mTabHost.setCurrentTabByTag("closest");										
 									} else {
 										showDialog(GEOCODE_ERROR_DIALOG);
 									}
