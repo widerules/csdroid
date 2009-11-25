@@ -16,9 +16,20 @@ public class PrefsActivity extends PreferenceActivity {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.layout.prefs);
 
-		setResult(UNCHANGED_RESULT);
+		
+		// TODO: these don't work
+		//setResult(UNCHANGED_RESULT);
+		setResult(CHANGED_RESULT);
 		
 		ListPreference mc = (ListPreference) findPreference("maxCharts");
+		mc.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+			public boolean onPreferenceChange(Preference preference,
+					Object newValue) {
+				setResult(CHANGED_RESULT);
+				return true;
+			}
+		});
+		ListPreference unitsList = (ListPreference) findPreference("units");
 		mc.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 			public boolean onPreferenceChange(Preference preference,
 					Object newValue) {

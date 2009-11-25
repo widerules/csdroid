@@ -28,4 +28,12 @@
 		<item>Add to favorites</item>
 		<item>Remove from favorites</item>
 	</string-array>
+	<string-array name="units_values">
+		<item>METRIC</item>
+		<item>US</item>
+	</string-array>
+	<string-array name="units_entries">
+		<item>Metric (kilometers)</item>
+		<item>US (miles)</item>
+	</string-array>
 </resources>

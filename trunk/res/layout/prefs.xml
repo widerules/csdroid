@@ -5,5 +5,10 @@
 		android:key="maxCharts" android:defaultValue="5"
 		android:entries="@array/max_charts_entries"
 		android:entryValues="@array/max_charts_values" />
+	<ListPreference android:title="Units"
+		android:summary="Display distances in metric (km) or US (miles)"
+		android:key="units" android:defaultValue="METRIC"
+		android:entries="@array/units_entries"
+		android:entryValues="@array/units_values" />
 </PreferenceScreen>
 
