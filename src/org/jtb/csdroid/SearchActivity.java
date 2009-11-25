@@ -58,6 +58,7 @@ public class SearchActivity extends Activity {
 				break;
 			case RESET_WHAT:
 				mSites = null;
+				lastSearchString = "";
 				break;
 			case UPDATE_WHAT:
 				update();

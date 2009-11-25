@@ -13,8 +13,6 @@ import android.app.TabActivity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
@@ -62,7 +60,9 @@ public class TabWidgetActivity extends TabActivity {
 	private AlertDialog mAddressDialog;
 	private AlertDialog mGeocodeErrorDialog;
 	private AlertDialog mLocationErrorDialog;
-
+	
+	private Prefs mPrefs;
+	
 	private Handler mHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
@@ -85,7 +85,8 @@ public class TabWidgetActivity extends TabActivity {
 
 		mThis = this;
 		mStaticHandler = mHandler;
-
+		mPrefs = new Prefs(this);
+		
 		if (setLocation()) {
 			startService();
 		}
@@ -108,12 +109,12 @@ public class TabWidgetActivity extends TabActivity {
 		mTabHost.addTab(searchTab);
 		mTabHost.addTab(favesTab);
 
-		String currentTab = getCurrentTab();
+		String currentTab = mPrefs.getCurrentTab();
 		mTabHost.setCurrentTabByTag(currentTab);
 
 		mTabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
 			public void onTabChanged(String tabId) {
-				setCurrentTab(tabId);
+				mPrefs.setCurrentTab(mTabHost, tabId);
 				initActivity();
 			}
 		});
@@ -144,7 +145,7 @@ public class TabWidgetActivity extends TabActivity {
 	}
 
 	private boolean setLocation() {
-		String address = getAddress();
+		String address = mPrefs.getAddress();
 		if (address != null && address.length() > 0) {
 			if (setLocationByAddress(address)) {
 				return true;
@@ -179,7 +180,7 @@ public class TabWidgetActivity extends TabActivity {
 	}
 
 	private void initActivity() {
-		String tabId = getCurrentTab();
+		String tabId = mPrefs.getCurrentTab();
 
 		if (tabId.equals("closest")) {
 			if (setLocation()) {
@@ -205,7 +206,7 @@ public class TabWidgetActivity extends TabActivity {
 	}
 
 	private void updateActivity() {
-		String tabId = getCurrentTab();
+		String tabId = mPrefs.getCurrentTab();
 
 		if (tabId.equals("closest")) {
 			if (setLocation()) {
@@ -248,37 +249,6 @@ public class TabWidgetActivity extends TabActivity {
 		}
 	}
 
-	private void setCurrentTab(String tabId) {
-		SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(mThis.getBaseContext());
-		String currentTab = mTabHost.getCurrentTabTag();
-		Editor e = prefs.edit();
-		e.putString("currentTab", currentTab);
-		e.commit();
-	}
-
-	private void setAddress(String address) {
-		SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(mThis.getBaseContext());
-		Editor e = prefs.edit();
-		e.putString("address", address);
-		e.commit();
-	}
-
-	private String getCurrentTab() {
-		SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(mThis.getBaseContext());
-		String currentTab = prefs.getString("currentTab", "closest");
-		return currentTab;
-	}
-
-	private String getAddress() {
-		SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(mThis.getBaseContext());
-		String address = prefs.getString("address", "");
-		return address;
-	}
-
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		boolean result = super.onCreateOptionsMenu(menu);
@@ -308,7 +278,7 @@ public class TabWidgetActivity extends TabActivity {
 			return true;
 		case MY_LOCATION_MENU:
 			if (setLocationByProvider()) {
-				setAddress("");
+				mPrefs.setAddress("");
 				resetActivities();
 				updateActivity();
 				mTabHost.setCurrentTabByTag("closest");														
@@ -330,10 +300,15 @@ public class TabWidgetActivity extends TabActivity {
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		switch (requestCode) {
 		case PREFS_REQUEST:
+			/*
 			if (resultCode == PrefsActivity.CHANGED_RESULT) {
 				resetActivities();
 				updateActivity();
 			}
+			*/
+			resetActivities();
+			updateActivity();
+
 			break;
 		}
 	}
@@ -401,7 +376,7 @@ public class TabWidgetActivity extends TabActivity {
 											.toString();
 									dismissDialog(ADDRESS_DIALOG);
 									if (setLocationByAddress(address)) {
-										setAddress(address);
+										mPrefs.setAddress(address);
 										resetActivities();
 										updateActivity();
 										mTabHost.setCurrentTabByTag("closest");										
