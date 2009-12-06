@@ -33,6 +33,8 @@ import android.widget.TabHost;
 public class TabWidgetActivity extends TabActivity {
 	static final int SERVICE_START_DIALOG_SHOW_WHAT = 0;
 	static final int SERVICE_START_DIALOG_DISMISS_WHAT = 1;
+	public static final int REFRESH_ERROR_SHOW_WHAT = 2;
+	static final int REFRESH_ERROR_HIDE_WHAT = 3;
 
 	private static final int INFO_DIALOG = 0;
 	private static final int REFRESH_DIALOG = 1;
@@ -40,6 +42,7 @@ public class TabWidgetActivity extends TabActivity {
 	private static final int ADDRESS_DIALOG = 3;
 	private static final int LOCATION_ERROR_DIALOG = 4;
 	private static final int GEOCODE_ERROR_DIALOG = 5;
+	private static final int REFRESH_ERROR_DIALOG = 6;
 
 	private static final int INFO_MENU = 0;
 	private static final int ADDRESS_MENU = 1;
@@ -60,8 +63,10 @@ public class TabWidgetActivity extends TabActivity {
 	private AlertDialog mAddressDialog;
 	private AlertDialog mGeocodeErrorDialog;
 	private AlertDialog mLocationErrorDialog;
+	private AlertDialog mRefreshErrorDialog;
 	
 	private Prefs mPrefs;
+	private String mRefreshError = null;
 	
 	private Handler mHandler = new Handler() {
 		@Override
@@ -72,6 +77,13 @@ public class TabWidgetActivity extends TabActivity {
 				break;
 			case SERVICE_START_DIALOG_DISMISS_WHAT:
 				dismissDialog(SERVICE_START_DIALOG);
+				break;
+			case REFRESH_ERROR_SHOW_WHAT:
+				mRefreshError = (String) msg.obj;
+				showDialog(REFRESH_ERROR_DIALOG);
+				break;
+			case REFRESH_ERROR_HIDE_WHAT:
+				dismissDialog(REFRESH_ERROR_DIALOG);
 				break;
 			}
 		}
@@ -419,6 +431,20 @@ public class TabWidgetActivity extends TabActivity {
 					});
 			mGeocodeErrorDialog = builder.create();
 			return mGeocodeErrorDialog;
+		}
+		case REFRESH_ERROR_DIALOG: {
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle("Error preparing charts");
+			builder.setMessage(mRefreshError);
+			builder.setNeutralButton(R.string.ok,
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							dismissDialog(REFRESH_ERROR_DIALOG);
+						}
+					});
+			builder.setIcon(android.R.drawable.ic_dialog_alert);
+			mRefreshErrorDialog = builder.create();
+			return mRefreshErrorDialog;
 		}
 		}
 		return null;

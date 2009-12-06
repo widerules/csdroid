@@ -122,12 +122,15 @@ public class SearchActivity extends Activity {
 			update();
 		}
 	}
-	
+
 	private void update() {
 		new Thread(new Runnable() {
 			public void run() {
 				String searchString = mSearchEdit.getText().toString();
-				if (searchString == null || searchString.trim().length() == 0
+				if (searchString != null) {
+					searchString = searchString.trim();
+				}
+				if (searchString == null || searchString.length() == 0
 						|| searchString.equalsIgnoreCase(lastSearchString)) {
 					return;
 				}

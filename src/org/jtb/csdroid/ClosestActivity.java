@@ -40,8 +40,6 @@ public class ClosestActivity extends Activity {
 	static final int UPDATE_LOCATION_DIALOG_SHOW_WHAT = 0;
 	static final int UPDATE_LOCATION_DIALOG_DISMISS_WHAT = 1;
 	static final int UPDATE_LIST_WHAT = 6;
-	public static final int REFRESH_ERROR_SHOW_WHAT = 10;
-	static final int REFRESH_ERROR_HIDE_WHAT = 11;
 	static final int UNKNOWN_LOCATION_DIALOG_SHOW_WHAT = 12;
 	static final int UNKNOWN_LOCATION_DIALOG_DISMISS_WHAT = 13;
 	static final int INIT_WHAT = 15;
@@ -51,11 +49,9 @@ public class ClosestActivity extends Activity {
 	static final int RESET_WHAT = 19;
 
 	private static final int UPDATE_LOCATION_DIALOG = 0;
-	private static final int REFRESH_ERROR_DIALOG = 3;
 	private static final int UNKNOWN_LOCATION_DIALOG = 4;
 
 	private ProgressDialog mUpdateLocationDialog;
-	private AlertDialog mRefreshErrorDialog;
 	private AlertDialog mListClickDialog;
 	private AlertDialog mUnknownLocationDialog = null;
 
@@ -63,7 +59,6 @@ public class ClosestActivity extends Activity {
 	private ListView mCSCListView;
 	private ClosestActivity mThis;
 	private Timer mTimer = new Timer();
-	private String mRefreshError = null;
 		
 	private Handler mHandler = new Handler() {
 		@Override
@@ -98,13 +93,6 @@ public class ClosestActivity extends Activity {
 				break;
 			case UNKNOWN_LOCATION_DIALOG_DISMISS_WHAT:
 				dismissDialog(UNKNOWN_LOCATION_DIALOG);
-				break;
-			case REFRESH_ERROR_SHOW_WHAT:
-				mRefreshError = (String) msg.obj;
-				showDialog(REFRESH_ERROR_DIALOG);
-				break;
-			case REFRESH_ERROR_HIDE_WHAT:
-				dismissDialog(REFRESH_ERROR_DIALOG);
 				break;
 			}
 		}
@@ -186,19 +174,6 @@ public class ClosestActivity extends Activity {
 			mUpdateLocationDialog.setIndeterminate(true);
 			mUpdateLocationDialog.setCancelable(false);
 			return mUpdateLocationDialog;
-		}
-		case REFRESH_ERROR_DIALOG: {
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setTitle("Error preparing charts");
-			builder.setMessage(mRefreshError);
-			builder.setNeutralButton(R.string.ok,
-					new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int which) {
-							dismissDialog(REFRESH_ERROR_DIALOG);
-						}
-					});
-			mRefreshErrorDialog = builder.create();
-			return mRefreshErrorDialog;
 		}
 		case UNKNOWN_LOCATION_DIALOG: {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
