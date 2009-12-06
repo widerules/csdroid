@@ -21,8 +21,9 @@ public class Site implements Serializable {
     private String regionLc;
     private double latitude;
     private double longitude;
-    private float distance;
+    private float distance = Float.MAX_VALUE;
     private File cacheDir;
+    private boolean locatable = false;
     
     public static class DistanceComparator<T> implements Comparator<Site> {
 		public int compare(Site s1, Site s2) {
@@ -64,9 +65,15 @@ public class Site implements Serializable {
         this.cacheDir = cacheDir;
     }
 
+    public boolean isLocatable() {
+    	return locatable;
+    }
+    
     public void setSiteLocation(SiteLocation siteLocation) {
     	this.latitude = siteLocation.getLatitude();
     	this.longitude = siteLocation.getLongitude();
+    	
+    	locatable = true;
     }
     
     public String getId() {
@@ -114,20 +121,12 @@ public class Site implements Serializable {
         return id + "csk.gif";
     }
 
-	public void setLatitude(double latitude) {
-		this.latitude = latitude;
-	}
-
 	public double getLatitude() {
 		return latitude;
 	}
 
 	public int getLatitudeE6() {
 		return (int) (latitude*Math.pow(10, 6));
-	}
-
-	public void setLongitude(double longitude) {
-		this.longitude = longitude;
 	}
 
 	public int getLongitudeE6() {
@@ -138,6 +137,7 @@ public class Site implements Serializable {
 		return longitude;
 	}
 
+	
 	public void setDistance(float distance) {
 		this.distance = distance;
 	}

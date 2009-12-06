@@ -69,14 +69,17 @@ public class CSCAdapter extends ArrayAdapter {
 		ratingLabel.setText(r);
 
 		TextView distance = (TextView) view.findViewById(R.id.csc_distance);
-		float d = s.getDistance();
-		if (prefs.getUnits() == Units.METRIC) {
-			distance.setText((int) (d / 1000) + " km");
+		if (s.isLocatable()) {
+			float d = s.getDistance();
+			if (prefs.getUnits() == Units.METRIC) {
+				distance.setText((int) (d / 1000) + " km");
+			} else {
+				distance.setText((int) (d / 1000 * Units.MILES_MUTLIPLIER)
+						+ " miles");
+			}
 		} else {
-			distance.setText((int) (d / 1000 * Units.MILES_MUTLIPLIER)
-					+ " miles");
+			distance.setText("unknown location");
 		}
-
 		ImageView summaryImg = (ImageView) view
 				.findViewById(R.id.csc_summary_img);
 		BufferedInputStream bis;
