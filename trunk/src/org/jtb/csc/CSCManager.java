@@ -188,21 +188,14 @@ public class CSCManager {
 			String line;
 			while ((line = br.readLine()) != null) {
 				SiteLocation sl = new SiteLocation(line);
-				if (!sl.isLocatable()) {
+				Site s = siteMap.get(sl.getId());
+				if (s == null) {
 					Log.d(this.getClass().getSimpleName(),
-							"no site location found for site id: \""
-									+ sl.getId() + "\", removing");
-					siteMap.remove(sl.getId());
-				} else {
-					Site s = siteMap.get(sl.getId());
-					if (s == null) {
-						Log.d(this.getClass().getSimpleName(),
-								"no site found for site location id: \""
-										+ sl.getId() + "\", ignoring");
+							"no site found for site location id: \""
+									+ sl.getId() + "\", ignoring");
 
-					} else {
-						s.setSiteLocation(sl);
-					}
+				} else if (sl.isLocatable()) {
+					s.setSiteLocation(sl);
 				}
 			}
 			Log.d(getClass().getSimpleName(), "took: " + bt.elapsed()
@@ -283,12 +276,11 @@ public class CSCManager {
 
 	private void setDistance(CSCLocation l, Site s) {
 		if (l == null) {
-			s.setLatitude(-1);
-			s.setLongitude(-1);
-			
 			return;
 		}
-		
+		if (!s.isLocatable()) {
+			return;
+		}
 		float[] results = new float[3];
 		Location.distanceBetween(l.getLatitude(), l.getLongitude(), s
 				.getLatitude(), s.getLongitude(), results);
@@ -348,7 +340,7 @@ public class CSCManager {
 								+ id);
 				continue;
 			}
-			
+
 			setDistance(location, s);
 			sites.add(s);
 		}
