@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jtb.csdroid.ClosestActivity;
+import org.jtb.csdroid.TabWidgetActivity;
 
 import android.content.Context;
 import android.location.Criteria;
@@ -83,31 +84,31 @@ public class CSCManager {
 		// 2. data on disk, but not in memory
 		// 3. data in memory (and disk)
 
-		Date d = getLastRefresh();
-		if (d == null
-				|| (new Date().getTime() > d.getTime() + REFRESH_INTERVAL)) {
-			// case 1: no or out of date data on disk
-			Log.d(getClass().getSimpleName(), "full refresh");
-			clearCache();
+		try {
 
-			try {
+			Date d = getLastRefresh();
+			if (d == null
+					|| (new Date().getTime() > d.getTime() + REFRESH_INTERVAL)) {
+				// case 1: no or out of date data on disk
+				Log.d(getClass().getSimpleName(), "full refresh");
+				clearCache();
+
 				readUrl(SITE_URL, siteFile, 16384);
 				readUrl(SITE_LOCATION_URL, siteLocationFile, 16384);
 				loadSites();
-			} catch (Throwable t) {
-				// TODO: move to tabwidget
-				ClosestActivity.mStaticHandler.sendMessage(Message
-						.obtain(ClosestActivity.mStaticHandler,
-								ClosestActivity.REFRESH_ERROR_SHOW_WHAT, t
-										.getMessage()));
-				siteMap = new HashMap<String, Site>();
-			}
-		} else if (siteMap == null) {
-			// case 2: data on disk, but not in memory
-			Log.d(getClass().getSimpleName(), "partial refresh");
-			loadSites();
-		}
 
+			} else if (siteMap == null) {
+				// case 2: data on disk, but not in memory
+				Log.d(getClass().getSimpleName(), "partial refresh");
+				loadSites();
+			}
+		} catch (Throwable t) {
+			Log.e(getClass().getSimpleName(), "error refreshing", t);
+			TabWidgetActivity.mStaticHandler.sendMessage(Message.obtain(
+					ClosestActivity.mStaticHandler,
+					TabWidgetActivity.REFRESH_ERROR_SHOW_WHAT, t.getMessage()));
+			siteMap = new HashMap<String, Site>();
+		}
 		// case 3: data in memory
 		Log.d(getClass().getSimpleName(), "no refresh");
 	}
@@ -120,13 +121,13 @@ public class CSCManager {
 		return new Date(d);
 	}
 
-	private void readConditions(List<Site> sites) {
+	private void readConditions(List<Site> sites) throws IOException {
 		for (Site s : sites) {
 			readConditions(s);
 		}
 	}
 
-	private void readConditions(Site s) {
+	private void readConditions(Site s) throws IOException {
 		File f = s.getConditionsFile();
 		if (!f.exists()) {
 			String url = s.getConditionsUrl();
@@ -134,7 +135,7 @@ public class CSCManager {
 		}
 	}
 
-	private void loadSites() {
+	private void loadSites() throws IOException {
 		siteMap = new HashMap<String, Site>();
 
 		InputStream is = null;
@@ -157,9 +158,6 @@ public class CSCManager {
 					+ siteMap.keySet().size() + " sites");
 			Log.d(getClass().getSimpleName(), "took: " + bt.elapsed()
 					+ "ms to load sites");
-		} catch (IOException ioe) {
-			Log.e(getClass().getSimpleName(), "error loading sites file", ioe);
-			return;
 		} finally {
 			try {
 				if (br != null) {
@@ -174,7 +172,7 @@ public class CSCManager {
 		loadSiteLocations();
 	}
 
-	private void loadSiteLocations() {
+	private void loadSiteLocations() throws IOException {
 		InputStream is = null;
 		BufferedReader br = null;
 
@@ -200,10 +198,6 @@ public class CSCManager {
 			}
 			Log.d(getClass().getSimpleName(), "took: " + bt.elapsed()
 					+ "ms to load site locations");
-		} catch (IOException ioe) {
-			Log.e(getClass().getSimpleName(),
-					"error loading site locations file", ioe);
-			return;
 		} finally {
 			try {
 				if (br != null) {
@@ -216,7 +210,7 @@ public class CSCManager {
 		}
 	}
 
-	private void readUrl(String url, File f, int bufferSize) {
+	private void readUrl(String url, File f, int bufferSize) throws IOException {
 		Log.d(getClass().getSimpleName(), "reading URL: " + url
 				+ " into file: " + f);
 
@@ -245,9 +239,6 @@ public class CSCManager {
 			while ((count = is.read(buffer, 0, bufferSize)) != -1) {
 				os.write(buffer, 0, count);
 			}
-		} catch (Throwable t) {
-			Log.w(getClass().getSimpleName(), t);
-			return;
 		} finally {
 			try {
 				if (is != null) {
@@ -296,12 +287,20 @@ public class CSCManager {
 		Collections.sort(sites, new Site.DistanceComparator<Site>());
 		sites = sites.subList(0, Math.min(sites.size(), maxSites));
 
-		readSummaryImages(sites);
-		readConditions(sites);
-		BlockTimer bt = new BlockTimer();
-		getConditions(sites);
-		Log.d(getClass().getSimpleName(), "took: " + bt.elapsed()
-				+ "ms to get conditions");
+		try {
+			readSummaryImages(sites);
+			readConditions(sites);
+			BlockTimer bt = new BlockTimer();
+			getConditions(sites);
+			Log.d(getClass().getSimpleName(), "took: " + bt.elapsed()
+					+ "ms to get conditions");
+		} catch (Throwable t) {
+			Log.e(getClass().getSimpleName(), "error getting sites", t);
+			TabWidgetActivity.mStaticHandler.sendMessage(Message.obtain(
+					ClosestActivity.mStaticHandler,
+					TabWidgetActivity.REFRESH_ERROR_SHOW_WHAT, t.getMessage()));
+
+		}
 
 		return sites;
 	}
@@ -318,10 +317,17 @@ public class CSCManager {
 		Collections.sort(sites, new Site.DistanceComparator<Site>());
 		sites = sites.subList(0, Math.min(sites.size(), maxSites));
 
-		readSummaryImages(sites);
-		readConditions(sites);
-		getConditions(sites);
+		try {
+			readSummaryImages(sites);
+			readConditions(sites);
+			getConditions(sites);
+		} catch (Throwable t) {
+			Log.e(getClass().getSimpleName(), "error getting sites", t);
+			TabWidgetActivity.mStaticHandler.sendMessage(Message.obtain(
+					ClosestActivity.mStaticHandler,
+					TabWidgetActivity.REFRESH_ERROR_SHOW_WHAT, t.getMessage()));
 
+		}
 		return sites;
 	}
 
@@ -346,10 +352,16 @@ public class CSCManager {
 		}
 		Collections.sort(sites, new Site.DistanceComparator<Site>());
 
-		readSummaryImages(sites);
-		readConditions(sites);
-		getConditions(sites);
-
+		try {
+			readSummaryImages(sites);
+			readConditions(sites);
+			getConditions(sites);
+		} catch (Throwable t) {
+			Log.e(getClass().getSimpleName(), "error getting sites", t);
+			TabWidgetActivity.mStaticHandler.sendMessage(Message.obtain(
+					ClosestActivity.mStaticHandler,
+					TabWidgetActivity.REFRESH_ERROR_SHOW_WHAT, t.getMessage()));
+		}
 		return sites;
 	}
 
@@ -371,8 +383,10 @@ public class CSCManager {
 			conditionsMap.put(s.getId(), cs);
 			return cs;
 		} catch (FileNotFoundException e) {
-			Log.w(getClass().getSimpleName(),
-					"could not read conditions file for site: " + s, e);
+			Log.e(getClass().getSimpleName(), "error getting conditions", e);
+			TabWidgetActivity.mStaticHandler.sendMessage(Message.obtain(
+					ClosestActivity.mStaticHandler,
+					TabWidgetActivity.REFRESH_ERROR_SHOW_WHAT, e.getMessage()));
 			return null;
 		} finally {
 			if (is != null) {
@@ -391,11 +405,18 @@ public class CSCManager {
 		if (s == null) {
 			return null;
 		}
-		readDetailImage(s);
+		try {
+			readDetailImage(s);
+		} catch (Throwable t) {
+			Log.e(getClass().getSimpleName(), "error getting site", t);
+			TabWidgetActivity.mStaticHandler.sendMessage(Message.obtain(
+					ClosestActivity.mStaticHandler,
+					TabWidgetActivity.REFRESH_ERROR_SHOW_WHAT, t.getMessage()));
+		}
 		return s;
 	}
 
-	private void readSummaryImages(List<Site> sites) {
+	private void readSummaryImages(List<Site> sites) throws IOException {
 		for (Site s : sites) {
 			File f = s.getSummaryImageFile();
 			if (!f.exists()) {
@@ -405,7 +426,7 @@ public class CSCManager {
 		}
 	}
 
-	private void readDetailImage(Site s) {
+	private void readDetailImage(Site s) throws IOException {
 		String u = s.getDetailImageUrl();
 		File f = s.getDetailImageFile();
 		if (!f.exists()) {
