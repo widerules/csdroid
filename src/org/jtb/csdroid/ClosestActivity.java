@@ -1,10 +1,7 @@
 package org.jtb.csdroid;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Timer;
 
-import org.jtb.csc.CSCLocation;
 import org.jtb.csc.CSCManager;
 import org.jtb.csc.Site;
 
@@ -12,32 +9,20 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.location.Address;
-import android.location.Criteria;
-import android.location.Geocoder;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ListView;
 
 public class ClosestActivity extends Activity {
-	static final int UPDATE_LOCATION_DIALOG_SHOW_WHAT = 0;
+	//static final int UPDATE_LOCATION_DIALOG_SHOW_WHAT = 0;
 	static final int UPDATE_LOCATION_DIALOG_DISMISS_WHAT = 1;
 	static final int UPDATE_LIST_WHAT = 6;
 	static final int UNKNOWN_LOCATION_DIALOG_SHOW_WHAT = 12;
@@ -58,7 +43,6 @@ public class ClosestActivity extends Activity {
 	private List<Site> mSites;
 	private ListView mCSCListView;
 	private ClosestActivity mThis;
-	private Timer mTimer = new Timer();
 		
 	private Handler mHandler = new Handler() {
 		@Override
@@ -81,9 +65,6 @@ public class ClosestActivity extends Activity {
 				break;
 			case UPDATE_LIST_WHAT:
 				updateList();
-				break;
-			case UPDATE_LOCATION_DIALOG_SHOW_WHAT:
-				showDialog(UPDATE_LOCATION_DIALOG);
 				break;
 			case UPDATE_LOCATION_DIALOG_DISMISS_WHAT:
 				dismissDialog(UPDATE_LOCATION_DIALOG);
@@ -140,12 +121,11 @@ public class ClosestActivity extends Activity {
 	}	
 
 	private void update() {
+		showDialog(UPDATE_LOCATION_DIALOG);
 		new Thread(new Runnable() {
 			public void run() {
+				try {
 				Message m = Message.obtain(mHandler,
-						UPDATE_LOCATION_DIALOG_SHOW_WHAT);
-				mHandler.sendMessage(m);
-				m = Message.obtain(mHandler,
 						HIDE_LIST_WHAT);
 				mHandler.sendMessage(m);
 
@@ -159,8 +139,10 @@ public class ClosestActivity extends Activity {
 				m = Message.obtain(mHandler,
 						SHOW_LIST_WHAT);
 				mHandler.sendMessage(m);
-				mHandler.sendMessage(Message.obtain(mHandler,
-						UPDATE_LOCATION_DIALOG_DISMISS_WHAT));
+				} finally {
+					mHandler.sendMessage(Message.obtain(mHandler,
+							UPDATE_LOCATION_DIALOG_DISMISS_WHAT));					
+				}
 			}
 		}).start();
 	}

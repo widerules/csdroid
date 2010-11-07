@@ -19,11 +19,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.TableLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
 
-public class CSCAdapter extends ArrayAdapter {
+public class CSCAdapter extends ArrayAdapter<Site> {
 	private Activity context;
 	private List<Site> sites;
 	private Prefs prefs;
@@ -51,13 +49,6 @@ public class CSCAdapter extends ArrayAdapter {
 		View ratingView = view.findViewById(R.id.csc_rating);
 		ratingView.setBackgroundColor(vr.getColor());
 
-		/*
-		 * TableRow r = (TableRow)table.findViewById(R.id.csc_text_row);
-		 * r.setBackgroundColor(vr.getColor()); r =
-		 * (TableRow)table.findViewById(R.id.csc_image_row);
-		 * r.setBackgroundColor(vr.getColor());
-		 */
-
 		TextView label = (TextView) view.findViewById(R.id.csc_label);
 		String name = s.getName();
 		String region = s.getRegion();
@@ -65,7 +56,7 @@ public class CSCAdapter extends ArrayAdapter {
 
 		TextView ratingLabel = (TextView) view
 				.findViewById(R.id.csc_rating_label);
-		String r = cs.getViewRating().toDisplayString();
+		String r = vr.toDisplayString();
 		ratingLabel.setText(r);
 
 		TextView distance = (TextView) view.findViewById(R.id.csc_distance);

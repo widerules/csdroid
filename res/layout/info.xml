@@ -12,23 +12,23 @@
 			android:orientation="vertical" android:layout_width="fill_parent"
 			android:layout_height="fill_parent" android:paddingLeft="5px">
 			<TextView android:text="CSDroid"
-				android:textSize="16px" android:layout_width="fill_parent"
+				android:textSize="16dp" android:layout_width="fill_parent"
 				android:layout_height="wrap_content"  />
 			<TextView android:text="Clear Sky Droid"
-				android:textSize="16px" android:layout_width="fill_parent"
+				android:textSize="16dp" android:layout_width="fill_parent"
 				android:layout_height="wrap_content" />
 		</LinearLayout>
 	</LinearLayout>
 	<TextView android:text="by jeffrey.blattman@gmail.com"
 		android:layout_width="fill_parent" android:layout_height="wrap_content"
-		android:gravity="center_horizontal" android:textSize="12px"
+		android:gravity="center_horizontal" android:textSize="12dp"
 		android:autoLink="email" />
 	<TextView android:text="All data and images used with permission from Clear Dark Sky"
 		android:layout_width="fill_parent" android:layout_height="wrap_content"
-		android:gravity="center_horizontal" android:textSize="12px" android:paddingTop="32px"
+		android:gravity="center_horizontal" android:textSize="12dp" android:paddingTop="32dp"
 		android:autoLink="email" />
 	<TextView android:text="http://cleardarksky.com"
 		android:layout_width="fill_parent" android:layout_height="wrap_content"
-		android:gravity="center_horizontal" android:textSize="12px"
+		android:gravity="center_horizontal" android:textSize="12dp"
 		android:autoLink="web" />
 </LinearLayout>

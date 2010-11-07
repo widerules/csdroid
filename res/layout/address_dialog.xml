@@ -4,8 +4,8 @@
 	android:layout_width="fill_parent" android:layout_height="fill_parent">
 	<EditText android:id="@+id/address" android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:layout_weight="1"
-		android:layout_marginLeft="8px" android:layout_marginRight="8px"
-		android:layout_marginBottom="8px" android:layout_marginTop="8px"
+		android:layout_marginLeft="8dp" android:layout_marginRight="8dp"
+		android:layout_marginBottom="8dp" android:layout_marginTop="8dp"
 		android:lines="1">
 	</EditText>
 </LinearLayout>

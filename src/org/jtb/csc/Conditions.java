@@ -67,14 +67,21 @@ public class Conditions {
 			Date now = new Date();
 
 			while (!(line = br.readLine()).equals(")")) {
-				Condition c = new Condition(line);
+				Condition c;
+				try {
+					c = new Condition(line);
+				} catch (IndexOutOfBoundsException e) {
+					Log.d("csdroid",
+							"skipping condition, out of bounds, line: " + line, e);
+					continue;
+				}
 				if (!c.isComplete()) {
-					Log.d(getClass().getSimpleName(),
-							"skipping condition, incomplete data");
+					Log.d("csdroid",
+							"skipping condition, incomplete data, line: " + line);
 					continue;
 				}
 				if (c.getDate().compareTo(now) <= 0) {
-					Log.d(getClass().getSimpleName(),
+					Log.d("csdroid",
 							"skipping condition, in the past");
 					continue;
 				}

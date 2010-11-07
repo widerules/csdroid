@@ -41,21 +41,18 @@ public class CSCManager {
 
 	private Map<String, Site> siteMap = null;
 	private Map<String, Conditions> conditionsMap = new HashMap<String, Conditions>();
+	
 	private File cacheDir;
 	private File siteFile;
 	private File siteLocationFile;
-	private LocationManager locationManager;
 
 	private CSCManager(Context context) {
 		// cacheDir = context.getCacheDir();
 		cacheDir = context.getDir("csc", Context.MODE_PRIVATE);
-		Log.d(getClass().getSimpleName(), "using cache dir: " + cacheDir);
+		Log.d("csdroid", "using cache dir: " + cacheDir);
 		siteFile = new File(cacheDir.toString() + "/" + "chart_prop00.txt");
 		siteLocationFile = new File(cacheDir.toString() + "/"
 				+ "chart_keys00.txt");
-
-		locationManager = (LocationManager) context
-				.getSystemService(Context.LOCATION_SERVICE);
 	}
 
 	public synchronized static CSCManager getInstance(Context context) {
@@ -90,7 +87,7 @@ public class CSCManager {
 			if (d == null
 					|| (new Date().getTime() > d.getTime() + REFRESH_INTERVAL)) {
 				// case 1: no or out of date data on disk
-				Log.d(getClass().getSimpleName(), "full refresh");
+				Log.d("csdroid", "full refresh");
 				clearCache();
 
 				readUrl(SITE_URL, siteFile, 16384);
@@ -99,18 +96,18 @@ public class CSCManager {
 
 			} else if (siteMap == null) {
 				// case 2: data on disk, but not in memory
-				Log.d(getClass().getSimpleName(), "partial refresh");
+				Log.d("csdroid", "partial refresh");
 				loadSites();
 			}
 		} catch (Throwable t) {
-			Log.e(getClass().getSimpleName(), "error refreshing", t);
+			Log.e("csdroid", "error refreshing", t);
 			TabWidgetActivity.mStaticHandler.sendMessage(Message.obtain(
 					ClosestActivity.mStaticHandler,
 					TabWidgetActivity.REFRESH_ERROR_SHOW_WHAT, t.getMessage()));
 			siteMap = new HashMap<String, Site>();
 		}
 		// case 3: data in memory
-		Log.d(getClass().getSimpleName(), "no refresh");
+		Log.d("csdroid", "no refresh");
 	}
 
 	private Date getLastRefresh() {
@@ -154,9 +151,9 @@ public class CSCManager {
 					siteMap.put(s.getId(), s);
 				}
 			}
-			Log.d(this.getClass().getSimpleName(), "read "
+			Log.d("csdroid", "read "
 					+ siteMap.keySet().size() + " sites");
-			Log.d(getClass().getSimpleName(), "took: " + bt.elapsed()
+			Log.d("csdroid", "took: " + bt.elapsed()
 					+ "ms to load sites");
 		} finally {
 			try {
@@ -164,7 +161,7 @@ public class CSCManager {
 					br.close();
 				}
 			} catch (IOException ioe) {
-				Log.e(getClass().getSimpleName(), "error closing sites file",
+				Log.e("csdroid", "error closing sites file",
 						ioe);
 			}
 		}
@@ -188,7 +185,7 @@ public class CSCManager {
 				SiteLocation sl = new SiteLocation(line);
 				Site s = siteMap.get(sl.getId());
 				if (s == null) {
-					Log.d(this.getClass().getSimpleName(),
+					Log.d("csdroid",
 							"no site found for site location id: \""
 									+ sl.getId() + "\", ignoring");
 
@@ -196,7 +193,7 @@ public class CSCManager {
 					s.setSiteLocation(sl);
 				}
 			}
-			Log.d(getClass().getSimpleName(), "took: " + bt.elapsed()
+			Log.d("csdroid", "took: " + bt.elapsed()
 					+ "ms to load site locations");
 		} finally {
 			try {
@@ -204,14 +201,14 @@ public class CSCManager {
 					br.close();
 				}
 			} catch (IOException ioe) {
-				Log.e(getClass().getSimpleName(),
+				Log.e("csdroid",
 						"error closing site locations file", ioe);
 			}
 		}
 	}
 
 	private void readUrl(String url, File f, int bufferSize) throws IOException {
-		Log.d(getClass().getSimpleName(), "reading URL: " + url
+		Log.d("csdroid", "reading URL: " + url
 				+ " into file: " + f);
 
 		InputStream is = null;
@@ -223,7 +220,7 @@ public class CSCManager {
 			uc.setReadTimeout(10000);
 
 			if (uc.getResponseCode() != 200) {
-				Log.w(getClass().getSimpleName(), "error reading URL: " + u
+				Log.w("csdroid", "error reading URL: " + u
 						+ ", response code: " + uc.getResponseCode());
 				return;
 			}
@@ -248,7 +245,7 @@ public class CSCManager {
 					os.close();
 				}
 			} catch (IOException ioe) {
-				Log.e(getClass().getSimpleName(), "error closing file", ioe);
+				Log.e("csdroid", "error closing file", ioe);
 			}
 		}
 	}
