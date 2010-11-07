@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">CSDroid - Clear Sky Droid</string>
+    <string name="app_name">Clear Sky Droid</string>
 <string name="info_menu">Info</string>
 <string name="ok">Ok</string>
 <string name="refresh_menu">Refresh</string>

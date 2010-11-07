@@ -20,6 +20,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -31,7 +32,7 @@ import android.widget.EditText;
 import android.widget.TabHost;
 
 public class TabWidgetActivity extends TabActivity {
-	static final int SERVICE_START_DIALOG_SHOW_WHAT = 0;
+	// static final int SERVICE_START_DIALOG_SHOW_WHAT = 0;
 	static final int SERVICE_START_DIALOG_DISMISS_WHAT = 1;
 	public static final int REFRESH_ERROR_SHOW_WHAT = 2;
 	static final int REFRESH_ERROR_HIDE_WHAT = 3;
@@ -64,17 +65,14 @@ public class TabWidgetActivity extends TabActivity {
 	private AlertDialog mGeocodeErrorDialog;
 	private AlertDialog mLocationErrorDialog;
 	private AlertDialog mRefreshErrorDialog;
-	
+
 	private Prefs mPrefs;
 	private String mRefreshError = null;
-	
+
 	private Handler mHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
-			case SERVICE_START_DIALOG_SHOW_WHAT:
-				showDialog(SERVICE_START_DIALOG);
-				break;
 			case SERVICE_START_DIALOG_DISMISS_WHAT:
 				dismissDialog(SERVICE_START_DIALOG);
 				break;
@@ -98,7 +96,7 @@ public class TabWidgetActivity extends TabActivity {
 		mThis = this;
 		mStaticHandler = mHandler;
 		mPrefs = new Prefs(this);
-		
+
 		if (setLocation()) {
 			startService();
 		}
@@ -107,11 +105,11 @@ public class TabWidgetActivity extends TabActivity {
 
 		TabHost.TabSpec closestTab = mTabHost.newTabSpec("closest")
 				.setIndicator("Closest",
-						getResources().getDrawable(R.drawable.location));
+						getResources().getDrawable(android.R.drawable.ic_menu_compass));
 		TabHost.TabSpec searchTab = mTabHost.newTabSpec("search").setIndicator(
-				"Search", getResources().getDrawable(R.drawable.search));
+				"Search", getResources().getDrawable(android.R.drawable.ic_menu_search));
 		TabHost.TabSpec favesTab = mTabHost.newTabSpec("faves").setIndicator(
-				"Favorites", getResources().getDrawable(R.drawable.edit));
+				"Favorites", getResources().getDrawable(android.R.drawable.ic_menu_edit));
 
 		closestTab.setContent(new Intent(this, ClosestActivity.class));
 		searchTab.setContent(new Intent(this, SearchActivity.class));
@@ -264,15 +262,15 @@ public class TabWidgetActivity extends TabActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		boolean result = super.onCreateOptionsMenu(menu);
-		menu.add(0, INFO_MENU, 0, R.string.info_menu).setIcon(R.drawable.info);
+		menu.add(0, INFO_MENU, 0, R.string.info_menu).setIcon(android.R.drawable.ic_menu_info_details);
 		menu.add(0, MY_LOCATION_MENU, 1, R.string.my_location_menu).setIcon(
-				R.drawable.my_location);
+				android.R.drawable.ic_menu_compass);
 		menu.add(0, ADDRESS_MENU, 2, R.string.address_menu).setIcon(
-				R.drawable.address);
+				android.R.drawable.ic_menu_send);
 		menu.add(0, REFRESH_MENU, 3, R.string.refresh_menu).setIcon(
-				R.drawable.refresh);
+				android.R.drawable.ic_menu_rotate);
 		menu.add(0, PREFS_MENU, 4, R.string.prefs_menu).setIcon(
-				R.drawable.prefs);
+				android.R.drawable.ic_menu_preferences);
 		return result;
 	}
 
@@ -293,7 +291,7 @@ public class TabWidgetActivity extends TabActivity {
 				mPrefs.setAddress("");
 				resetActivities();
 				updateActivity();
-				mTabHost.setCurrentTabByTag("closest");														
+				mTabHost.setCurrentTabByTag("closest");
 			} else {
 				showDialog(LOCATION_ERROR_DIALOG);
 			}
@@ -313,11 +311,9 @@ public class TabWidgetActivity extends TabActivity {
 		switch (requestCode) {
 		case PREFS_REQUEST:
 			/*
-			if (resultCode == PrefsActivity.CHANGED_RESULT) {
-				resetActivities();
-				updateActivity();
-			}
-			*/
+			 * if (resultCode == PrefsActivity.CHANGED_RESULT) {
+			 * resetActivities(); updateActivity(); }
+			 */
 			resetActivities();
 			updateActivity();
 
@@ -326,13 +322,17 @@ public class TabWidgetActivity extends TabActivity {
 	}
 
 	public void startService() {
+		showDialog(SERVICE_START_DIALOG);
 		new Thread(new Runnable() {
 			public void run() {
-				mHandler.sendMessage(Message.obtain(mHandler,
-						SERVICE_START_DIALOG_SHOW_WHAT));
-				CSCManager.getInstance(mThis);
-				mHandler.sendMessage(Message.obtain(mHandler,
-						SERVICE_START_DIALOG_DISMISS_WHAT));
+				Looper.prepare();
+				try {
+					CSCManager.getInstance(mThis);
+				} finally {
+					mHandler.sendMessage(Message.obtain(mHandler,
+							SERVICE_START_DIALOG_DISMISS_WHAT));
+				}
+				resetActivities();
 				initActivity();
 			}
 		}).start();
@@ -342,8 +342,7 @@ public class TabWidgetActivity extends TabActivity {
 		switch (id) {
 		case REFRESH_DIALOG: {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder
-					.setMessage("Charts update automatically. Manual updates can add extra load to servers.\n\nAre you sure?");
+			builder.setMessage("Charts update automatically. Manual updates can add extra load to servers.\n\nAre you sure?");
 			builder.setPositiveButton(R.string.yes,
 					new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int which) {
@@ -378,8 +377,9 @@ public class TabWidgetActivity extends TabActivity {
 			final View zipView = factory.inflate(R.layout.address_dialog, null);
 			final EditText zipEdit = (EditText) zipView
 					.findViewById(R.id.address);
-			mAddressDialog = new AlertDialog.Builder(this).setTitle(
-					"Enter Address / Zip Code").setView(zipView)
+			mAddressDialog = new AlertDialog.Builder(this)
+					.setTitle("Enter Address / Zip Code")
+					.setView(zipView)
 					.setPositiveButton(R.string.ok,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
@@ -391,12 +391,13 @@ public class TabWidgetActivity extends TabActivity {
 										mPrefs.setAddress(address);
 										resetActivities();
 										updateActivity();
-										mTabHost.setCurrentTabByTag("closest");										
+										mTabHost.setCurrentTabByTag("closest");
 									} else {
 										showDialog(GEOCODE_ERROR_DIALOG);
 									}
 								}
-							}).setNegativeButton(R.string.cancel,
+							})
+					.setNegativeButton(R.string.cancel,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
 										int whichButton) {
@@ -408,8 +409,7 @@ public class TabWidgetActivity extends TabActivity {
 		case LOCATION_ERROR_DIALOG: {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle("Warning");
-			builder
-					.setMessage("Could not determine your location. Enable network or GPS location services, or use Menu>Go to Address.");
+			builder.setMessage("Could not determine your location. Enable network or GPS location services, or use Menu>Go to Address.");
 			builder.setNeutralButton(R.string.ok,
 					new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int which) {
@@ -421,8 +421,7 @@ public class TabWidgetActivity extends TabActivity {
 		}
 		case GEOCODE_ERROR_DIALOG: {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder
-					.setMessage("Could not find location for that address / zip.");
+			builder.setMessage("Could not find location for that address / zip.");
 			builder.setNeutralButton(R.string.ok,
 					new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int which) {

@@ -5,24 +5,24 @@
 	<LinearLayout android:orientation="horizontal" android:id="@+id/csc_rating"
 		android:layout_width="8px" android:layout_height="fill_parent" />
 	<TableLayout android:layout_height="fill_parent"
-		android:layout_width="fill_parent" android:paddingBottom="4px"
-		android:paddingLeft="4px">
+		android:layout_width="fill_parent" android:paddingBottom="4dp"
+		android:paddingLeft="4dp">
 		<TableRow android:id="@+id/csc_text_row">
 			<TextView android:text="TestRegion - Test Chart Name"
 				android:textStyle="bold"
-				android:id="@+id/csc_label" android:textSize="16px"
+				android:id="@+id/csc_label" android:textSize="16dp"
 				android:layout_width="fill_parent" android:layout_height="wrap_content" />
 		</TableRow>
 		<TableRow>
 			<TableLayout android:layout_height="wrap_content"
 				android:layout_width="wrap_content" android:shrinkColumns="*">
 				<TableRow>
-					<TextView android:id="@+id/csc_rating_label" android:text="Poor" android:textSize="10px"
+					<TextView android:id="@+id/csc_rating_label" android:text="Poor" android:textSize="12dp"
 						android:layout_width="fill_parent" android:layout_height="wrap_content" />
-					<TextView android:text=" conditions, " android:textSize="10px"
+					<TextView android:text=" conditions, " android:textSize="12dp"
 						android:layout_width="fill_parent" android:layout_height="wrap_content" />
 					<TextView android:id="@+id/csc_distance" android:text="123km"
-						android:layout_width="fill_parent" android:textSize="10px"
+						android:layout_width="fill_parent" android:textSize="12dp"
 						android:layout_height="wrap_content" />
 				</TableRow>
 			</TableLayout>
