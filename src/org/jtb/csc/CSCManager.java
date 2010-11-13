@@ -145,8 +145,9 @@ public class CSCManager {
 					16384);
 
 			String line;
+			Site s;
 			while ((line = br.readLine()) != null) {
-				Site s = new Site(cacheDir, line);
+				s = new Site(cacheDir, line);
 				if (s.getId() != null) {
 					siteMap.put(s.getId(), s);
 				}
@@ -181,9 +182,11 @@ public class CSCManager {
 					16384);
 
 			String line;
+			SiteLocation sl;
+			Site s;
 			while ((line = br.readLine()) != null) {
-				SiteLocation sl = new SiteLocation(line);
-				Site s = siteMap.get(sl.getId());
+				sl = new SiteLocation(line);
+				s = siteMap.get(sl.getId());
 				if (s == null) {
 					Log.d("csdroid",
 							"no site found for site location id: \""

@@ -22,7 +22,6 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 
 public class ClosestActivity extends Activity {
-	//static final int UPDATE_LOCATION_DIALOG_SHOW_WHAT = 0;
 	static final int UPDATE_LOCATION_DIALOG_DISMISS_WHAT = 1;
 	static final int UPDATE_LIST_WHAT = 6;
 	static final int UNKNOWN_LOCATION_DIALOG_SHOW_WHAT = 12;
@@ -43,7 +42,7 @@ public class ClosestActivity extends Activity {
 	private List<Site> mSites;
 	private ListView mCSCListView;
 	private ClosestActivity mThis;
-		
+
 	private Handler mHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
@@ -67,13 +66,17 @@ public class ClosestActivity extends Activity {
 				updateList();
 				break;
 			case UPDATE_LOCATION_DIALOG_DISMISS_WHAT:
-				dismissDialog(UPDATE_LOCATION_DIALOG);
+				if (mUpdateLocationDialog.isShowing()) {
+					dismissDialog(UPDATE_LOCATION_DIALOG);
+				}
 				break;
 			case UNKNOWN_LOCATION_DIALOG_SHOW_WHAT:
 				showDialog(UNKNOWN_LOCATION_DIALOG);
 				break;
 			case UNKNOWN_LOCATION_DIALOG_DISMISS_WHAT:
-				dismissDialog(UNKNOWN_LOCATION_DIALOG);
+				if (mUnknownLocationDialog.isShowing()) {
+					dismissDialog(UNKNOWN_LOCATION_DIALOG);
+				}
 				break;
 			}
 		}
@@ -86,7 +89,6 @@ public class ClosestActivity extends Activity {
 			mCSCListView.setAdapter(csca);
 		}
 	}
-
 
 	private int getMaxCharts() {
 		SharedPreferences prefs = PreferenceManager
@@ -107,41 +109,42 @@ public class ClosestActivity extends Activity {
 		mCSCListView.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View v,
 					int position, long id) {
-				AlertDialog.Builder builder = new ListClickDialog.Builder(mThis, mSites, position);
+				AlertDialog.Builder builder = new ListClickDialog.Builder(
+						mThis, mSites, position);
 				mListClickDialog = builder.create();
 				mListClickDialog.show();
 			}
-		});	
+		});
 	}
-	
+
 	private void init() {
 		if (mSites == null) {
 			update();
 		}
-	}	
+	}
 
 	private void update() {
 		showDialog(UPDATE_LOCATION_DIALOG);
 		new Thread(new Runnable() {
 			public void run() {
 				try {
-				Message m = Message.obtain(mHandler,
-						HIDE_LIST_WHAT);
-				mHandler.sendMessage(m);
+					Message m = Message.obtain(mHandler, HIDE_LIST_WHAT);
+					mHandler.sendMessage(m);
 
-				CSCManager cscm = CSCManager.getInstance(mThis);
-				int maxCharts = getMaxCharts();
-				Log.d(getClass().getSimpleName(), "getting up to " + maxCharts);
-				mSites = cscm.getSites(TabWidgetActivity.mLocation, maxCharts);
+					CSCManager cscm = CSCManager.getInstance(mThis);
+					int maxCharts = getMaxCharts();
+					Log.d(getClass().getSimpleName(), "getting up to "
+							+ maxCharts);
+					mSites = cscm.getSites(TabWidgetActivity.mLocation,
+							maxCharts);
 
-				mHandler
-						.sendMessage(Message.obtain(mHandler, UPDATE_LIST_WHAT));
-				m = Message.obtain(mHandler,
-						SHOW_LIST_WHAT);
-				mHandler.sendMessage(m);
+					mHandler.sendMessage(Message.obtain(mHandler,
+							UPDATE_LIST_WHAT));
+					m = Message.obtain(mHandler, SHOW_LIST_WHAT);
+					mHandler.sendMessage(m);
 				} finally {
 					mHandler.sendMessage(Message.obtain(mHandler,
-							UPDATE_LOCATION_DIALOG_DISMISS_WHAT));					
+							UPDATE_LOCATION_DIALOG_DISMISS_WHAT));
 				}
 			}
 		}).start();

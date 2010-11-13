@@ -27,10 +27,8 @@ import android.widget.AdapterView.OnItemClickListener;
 public class SearchActivity extends Activity {
 	private static final int SEARCHING_DIALOG = 0;
 	private static final int INFO_DIALOG = 1;
-	private static final int LIST_CLICK_DIALOG = 3;
 
-	static final int SEARCHING_DIALOG_SHOW_WHAT = 0;
-	static final int SEARCHING_DIALOG_DISMISS_WHAT = 1;
+	private static final int SEARCHING_DIALOG_DISMISS_WHAT = 1;
 	static final int UPDATE_LIST_WHAT = 2;
 	static final int INIT_WHAT = 3;
 	static final int UPDATE_WHAT = 4;
@@ -66,11 +64,10 @@ public class SearchActivity extends Activity {
 			case UPDATE_LIST_WHAT:
 				updateList();
 				break;
-			case SEARCHING_DIALOG_SHOW_WHAT:
-				showDialog(SEARCHING_DIALOG);
-				break;
 			case SEARCHING_DIALOG_DISMISS_WHAT:
-				dismissDialog(SEARCHING_DIALOG);
+				if (mSearchingDialog.isShowing()) {
+					dismissDialog(SEARCHING_DIALOG);
+				}
 				break;
 			case HIDE_LIST_WHAT:
 				mCSCListView.setVisibility(View.GONE);
@@ -124,33 +121,34 @@ public class SearchActivity extends Activity {
 	}
 
 	private void update() {
+		showDialog(SEARCHING_DIALOG);
 		new Thread(new Runnable() {
 			public void run() {
-				String searchString = mSearchEdit.getText().toString();
-				if (searchString != null) {
-					searchString = searchString.trim();
-				}
-				if (searchString == null || searchString.length() == 0
-						|| searchString.equalsIgnoreCase(lastSearchString)) {
-					return;
-				}
-				lastSearchString = searchString;
+				try {
+					String searchString = mSearchEdit.getText().toString();
+					if (searchString != null) {
+						searchString = searchString.trim();
+					}
+					if (searchString == null || searchString.length() == 0
+							|| searchString.equalsIgnoreCase(lastSearchString)) {
+						return;
+					}
+					lastSearchString = searchString;
 
-				Message m = Message
-						.obtain(mHandler, SEARCHING_DIALOG_SHOW_WHAT);
-				mHandler.sendMessage(m);
-				m = Message.obtain(mHandler, HIDE_LIST_WHAT);
-				mHandler.sendMessage(m);
+					Message m = Message.obtain(mHandler, HIDE_LIST_WHAT);
+					mHandler.sendMessage(m);
 
-				CSCManager cscm = CSCManager.getInstance(mThis);
-				mSites = cscm.getSites(TabWidgetActivity.mLocation, mSearchEdit
-						.getText().toString(), getMaxCharts());
-				mHandler
-						.sendMessage(Message.obtain(mHandler, UPDATE_LIST_WHAT));
-				m = Message.obtain(mHandler, SHOW_LIST_WHAT);
-				mHandler.sendMessage(m);
-				mHandler.sendMessage(Message.obtain(mHandler,
-						SEARCHING_DIALOG_DISMISS_WHAT));
+					CSCManager cscm = CSCManager.getInstance(mThis);
+					mSites = cscm.getSites(TabWidgetActivity.mLocation,
+							mSearchEdit.getText().toString(), getMaxCharts());
+					mHandler.sendMessage(Message.obtain(mHandler,
+							UPDATE_LIST_WHAT));
+					m = Message.obtain(mHandler, SHOW_LIST_WHAT);
+					mHandler.sendMessage(m);
+				} finally {
+					mHandler.sendMessage(Message.obtain(mHandler,
+							SEARCHING_DIALOG_DISMISS_WHAT));
+				}
 			}
 		}).start();
 	}
