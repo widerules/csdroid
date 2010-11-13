@@ -33,7 +33,7 @@ import android.widget.TabHost;
 
 public class TabWidgetActivity extends TabActivity {
 	// static final int SERVICE_START_DIALOG_SHOW_WHAT = 0;
-	static final int SERVICE_START_DIALOG_DISMISS_WHAT = 1;
+	private final int SERVICE_START_DIALOG_DISMISS_WHAT = 1;
 	public static final int REFRESH_ERROR_SHOW_WHAT = 2;
 	static final int REFRESH_ERROR_HIDE_WHAT = 3;
 
@@ -74,14 +74,18 @@ public class TabWidgetActivity extends TabActivity {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case SERVICE_START_DIALOG_DISMISS_WHAT:
-				dismissDialog(SERVICE_START_DIALOG);
+				if (mServiceStartDialog.isShowing()) {
+					dismissDialog(SERVICE_START_DIALOG);
+				}
 				break;
 			case REFRESH_ERROR_SHOW_WHAT:
 				mRefreshError = (String) msg.obj;
 				showDialog(REFRESH_ERROR_DIALOG);
 				break;
 			case REFRESH_ERROR_HIDE_WHAT:
-				dismissDialog(REFRESH_ERROR_DIALOG);
+				if (mRefreshErrorDialog.isShowing()) {
+					dismissDialog(REFRESH_ERROR_DIALOG);
+				}
 				break;
 			}
 		}
@@ -97,19 +101,19 @@ public class TabWidgetActivity extends TabActivity {
 		mStaticHandler = mHandler;
 		mPrefs = new Prefs(this);
 
-		if (setLocation()) {
-			startService();
-		}
-
 		mTabHost = getTabHost();
 
 		TabHost.TabSpec closestTab = mTabHost.newTabSpec("closest")
-				.setIndicator("Closest",
-						getResources().getDrawable(android.R.drawable.ic_menu_compass));
+				.setIndicator(
+						"Closest",
+						getResources().getDrawable(
+								android.R.drawable.ic_menu_compass));
 		TabHost.TabSpec searchTab = mTabHost.newTabSpec("search").setIndicator(
-				"Search", getResources().getDrawable(android.R.drawable.ic_menu_search));
+				"Search",
+				getResources().getDrawable(android.R.drawable.ic_menu_search));
 		TabHost.TabSpec favesTab = mTabHost.newTabSpec("faves").setIndicator(
-				"Favorites", getResources().getDrawable(android.R.drawable.ic_menu_edit));
+				"Favorites",
+				getResources().getDrawable(android.R.drawable.ic_menu_edit));
 
 		closestTab.setContent(new Intent(this, ClosestActivity.class));
 		searchTab.setContent(new Intent(this, SearchActivity.class));
@@ -129,6 +133,11 @@ public class TabWidgetActivity extends TabActivity {
 			}
 		});
 
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
 		startService();
 	}
 
@@ -262,7 +271,8 @@ public class TabWidgetActivity extends TabActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		boolean result = super.onCreateOptionsMenu(menu);
-		menu.add(0, INFO_MENU, 0, R.string.info_menu).setIcon(android.R.drawable.ic_menu_info_details);
+		menu.add(0, INFO_MENU, 0, R.string.info_menu).setIcon(
+				android.R.drawable.ic_menu_info_details);
 		menu.add(0, MY_LOCATION_MENU, 1, R.string.my_location_menu).setIcon(
 				android.R.drawable.ic_menu_compass);
 		menu.add(0, ADDRESS_MENU, 2, R.string.address_menu).setIcon(
