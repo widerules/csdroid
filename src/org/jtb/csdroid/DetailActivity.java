@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 
 import org.jtb.csc.CSCManager;
 import org.jtb.csc.Site;
+import org.jtb.csdroid.donate.R;
 
 import android.app.Activity;
 import android.content.Intent;

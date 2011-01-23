@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.jtb.csc.CSCManager;
 import org.jtb.csc.Site;
+import org.jtb.csdroid.donate.R;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -67,7 +68,7 @@ public class ClosestActivity extends Activity {
 				break;
 			case UPDATE_LOCATION_DIALOG_DISMISS_WHAT:
 				if (mUpdateLocationDialog.isShowing()) {
-					dismissDialog(UPDATE_LOCATION_DIALOG);
+					mUpdateLocationDialog.hide();
 				}
 				break;
 			case UNKNOWN_LOCATION_DIALOG_SHOW_WHAT:
@@ -153,11 +154,13 @@ public class ClosestActivity extends Activity {
 	protected Dialog onCreateDialog(int id) {
 		switch (id) {
 		case UPDATE_LOCATION_DIALOG: {
-			mUpdateLocationDialog = new ProgressDialog(this);
-			mUpdateLocationDialog
-					.setMessage("Finding closest charts, please wait.");
-			mUpdateLocationDialog.setIndeterminate(true);
-			mUpdateLocationDialog.setCancelable(false);
+			if (mUpdateLocationDialog == null) {
+				mUpdateLocationDialog = new ProgressDialog(this);
+				mUpdateLocationDialog
+						.setMessage("Finding closest charts, please wait.");
+				mUpdateLocationDialog.setIndeterminate(true);
+				mUpdateLocationDialog.setCancelable(false);
+			}
 			return mUpdateLocationDialog;
 		}
 		case UNKNOWN_LOCATION_DIALOG: {

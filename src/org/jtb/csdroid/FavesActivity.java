@@ -1,27 +1,25 @@
 package org.jtb.csdroid;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.jtb.csc.CSCManager;
 import org.jtb.csc.Site;
+import org.jtb.csdroid.donate.R;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ListView;
 
 public class FavesActivity extends Activity implements
 		OnSharedPreferenceChangeListener {
@@ -63,7 +61,9 @@ public class FavesActivity extends Activity implements
 				showDialog(UPDATE_DIALOG);
 				break;
 			case UPDATE_DIALOG_DISMISS_WHAT:
-				dismissDialog(UPDATE_DIALOG);
+				if (mUpdateDialog != null && mUpdateDialog.isShowing()) {
+					mUpdateDialog.hide();
+				}
 				break;
 			case HIDE_LIST_WHAT:
 				mCSCListView.setVisibility(View.GONE);
@@ -106,20 +106,19 @@ public class FavesActivity extends Activity implements
 			mCSCListView.setAdapter(csca);
 		}
 	}
-	
+
 	private void init() {
 		if (mSites == null) {
 			update();
 		}
-	}	
+	}
 
 	private void update() {
 		new Thread(new Runnable() {
 			public void run() {
 				Message m = Message.obtain(mHandler, UPDATE_DIALOG_SHOW_WHAT);
 				mHandler.sendMessage(m);
-				m = Message.obtain(mHandler,
-						HIDE_LIST_WHAT);
+				m = Message.obtain(mHandler, HIDE_LIST_WHAT);
 				mHandler.sendMessage(m);
 
 				SharedPreferences prefs = PreferenceManager
@@ -132,8 +131,7 @@ public class FavesActivity extends Activity implements
 				m = Message.obtain(mHandler, UPDATE_LIST_WHAT);
 				mHandler.sendMessage(m);
 
-				m = Message.obtain(mHandler,
-						SHOW_LIST_WHAT);
+				m = Message.obtain(mHandler, SHOW_LIST_WHAT);
 				mHandler.sendMessage(m);
 				m = Message.obtain(mHandler, UPDATE_DIALOG_DISMISS_WHAT);
 				mHandler.sendMessage(m);
@@ -145,10 +143,12 @@ public class FavesActivity extends Activity implements
 	protected Dialog onCreateDialog(int id) {
 		switch (id) {
 		case UPDATE_DIALOG: {
-			mUpdateDialog = new ProgressDialog(this);
-			mUpdateDialog.setMessage("Loading favorites, please wait.");
-			mUpdateDialog.setIndeterminate(true);
-			mUpdateDialog.setCancelable(false);
+			if (mUpdateDialog == null) {
+				mUpdateDialog = new ProgressDialog(this);
+				mUpdateDialog.setMessage("Loading favorites, please wait.");
+				mUpdateDialog.setIndeterminate(true);
+				mUpdateDialog.setCancelable(false);
+			}
 			return mUpdateDialog;
 		}
 		}

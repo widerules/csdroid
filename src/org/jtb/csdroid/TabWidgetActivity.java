@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.jtb.csc.CSCLocation;
 import org.jtb.csc.CSCManager;
+import org.jtb.csc.Site;
+import org.jtb.csdroid.donate.R;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -22,7 +24,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -36,6 +37,7 @@ public class TabWidgetActivity extends TabActivity {
 	private final int SERVICE_START_DIALOG_DISMISS_WHAT = 1;
 	public static final int REFRESH_ERROR_SHOW_WHAT = 2;
 	static final int REFRESH_ERROR_HIDE_WHAT = 3;
+	static final int FAVE_SHORTCUT_SHOW_WHAT = 4;
 
 	private static final int INFO_DIALOG = 0;
 	private static final int REFRESH_DIALOG = 1;
@@ -44,6 +46,7 @@ public class TabWidgetActivity extends TabActivity {
 	private static final int LOCATION_ERROR_DIALOG = 4;
 	private static final int GEOCODE_ERROR_DIALOG = 5;
 	private static final int REFRESH_ERROR_DIALOG = 6;
+	static final int FAVE_SHORTCUT_DIALOG = 7;
 
 	private static final int INFO_MENU = 0;
 	private static final int ADDRESS_MENU = 1;
@@ -65,6 +68,7 @@ public class TabWidgetActivity extends TabActivity {
 	private AlertDialog mGeocodeErrorDialog;
 	private AlertDialog mLocationErrorDialog;
 	private AlertDialog mRefreshErrorDialog;
+	Dialog mFaveShortcutDialog = null;
 
 	private Prefs mPrefs;
 	private String mRefreshError = null;
@@ -75,7 +79,7 @@ public class TabWidgetActivity extends TabActivity {
 			switch (msg.what) {
 			case SERVICE_START_DIALOG_DISMISS_WHAT:
 				if (mServiceStartDialog.isShowing()) {
-					dismissDialog(SERVICE_START_DIALOG);
+					mServiceStartDialog.hide();
 				}
 				break;
 			case REFRESH_ERROR_SHOW_WHAT:
@@ -86,6 +90,9 @@ public class TabWidgetActivity extends TabActivity {
 				if (mRefreshErrorDialog.isShowing()) {
 					dismissDialog(REFRESH_ERROR_DIALOG);
 				}
+				break;
+			case FAVE_SHORTCUT_SHOW_WHAT:
+				showDialog(FAVE_SHORTCUT_DIALOG);
 				break;
 			}
 		}
@@ -342,8 +349,31 @@ public class TabWidgetActivity extends TabActivity {
 					mHandler.sendMessage(Message.obtain(mHandler,
 							SERVICE_START_DIALOG_DISMISS_WHAT));
 				}
-				resetActivities();
-				initActivity();
+
+				String action = getIntent().getAction();
+				String id = null;
+				Bundle extras = getIntent().getExtras();
+				if (extras != null) {
+					id = extras.getString("org.jtb.csdroid.site.id");
+				}
+
+				// request to create shortcut?
+				if (action != null
+						&& action
+								.equals("android.intent.action.CREATE_SHORTCUT")) {
+					mHandler.sendEmptyMessage(FAVE_SHORTCUT_SHOW_WHAT);
+					// request to open details?
+				} else if (id != null) {
+					Intent i = new Intent(TabWidgetActivity.this,
+							DetailActivity.class);
+					i.putExtra("org.jtb.csdroid.site.id", id);
+					startActivity(i);
+					finish();
+					// request to open application
+				} else {
+					resetActivities();
+					initActivity();
+				}
 			}
 		}).start();
 	}
@@ -351,23 +381,27 @@ public class TabWidgetActivity extends TabActivity {
 	protected Dialog onCreateDialog(int id) {
 		switch (id) {
 		case REFRESH_DIALOG: {
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setMessage("Charts update automatically. Manual updates can add extra load to servers.\n\nAre you sure?");
-			builder.setPositiveButton(R.string.yes,
-					new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int which) {
-							dismissDialog(REFRESH_DIALOG);
-							CSCManager.getInstance(mThis).clearCache();
-							startService();
-						}
-					});
-			builder.setNegativeButton(R.string.no,
-					new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int which) {
-							dismissDialog(REFRESH_DIALOG);
-						}
-					});
-			mRefreshDialog = builder.create();
+			if (mRefreshDialog == null) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(this);
+				builder.setMessage("Charts update automatically. Manual updates can add extra load to servers.\n\nAre you sure?");
+				builder.setPositiveButton(R.string.yes,
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog,
+									int which) {
+								dismissDialog(REFRESH_DIALOG);
+								CSCManager.getInstance(mThis).clearCache();
+								startService();
+							}
+						});
+				builder.setNegativeButton(R.string.no,
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog,
+									int which) {
+								dismissDialog(REFRESH_DIALOG);
+							}
+						});
+				mRefreshDialog = builder.create();
+			}
 			return mRefreshDialog;
 		}
 		case INFO_DIALOG: {
@@ -376,10 +410,13 @@ public class TabWidgetActivity extends TabActivity {
 			return mInfoDialog;
 		}
 		case SERVICE_START_DIALOG: {
-			mServiceStartDialog = new ProgressDialog(this);
-			mServiceStartDialog.setMessage("Preparing charts, please wait.");
-			mServiceStartDialog.setIndeterminate(true);
-			mServiceStartDialog.setCancelable(false);
+			if (mServiceStartDialog == null) {
+				mServiceStartDialog = new ProgressDialog(this);
+				mServiceStartDialog
+						.setMessage("Preparing charts, please wait.");
+				mServiceStartDialog.setIndeterminate(true);
+				mServiceStartDialog.setCancelable(false);
+			}
 			return mServiceStartDialog;
 		}
 		case ADDRESS_DIALOG: {
@@ -455,7 +492,34 @@ public class TabWidgetActivity extends TabActivity {
 			mRefreshErrorDialog = builder.create();
 			return mRefreshErrorDialog;
 		}
+		case FAVE_SHORTCUT_DIALOG: {
+			if (mFaveShortcutDialog == null) {
+				AlertDialog.Builder builder = new FaveShortcutDialogBuilder(
+						this);
+				mFaveShortcutDialog = builder.create();
+			}
+			return mFaveShortcutDialog;
+		}
 		}
 		return null;
 	}
+
+	void saveShortcut(Site site) {
+		Intent shortcutIntent = new Intent(this, TabWidgetActivity.class);
+		// shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		// shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		// TODO: get side ID and add it
+		shortcutIntent.putExtra("org.jtb.csdroid.site.id", site.getId());
+
+		Intent intent = new Intent();
+		intent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
+		intent.putExtra(Intent.EXTRA_SHORTCUT_NAME, site.getName());
+		intent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE,
+				Intent.ShortcutIconResource.fromContext(this, R.drawable.icon));
+		intent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
+
+		setResult(RESULT_OK, intent);
+		finish();
+	}
+
 }

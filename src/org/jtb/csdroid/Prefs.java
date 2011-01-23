@@ -13,7 +13,7 @@ public class Prefs {
 		this.context = context;
 	}
 
-	private String getString(String key, String def) {
+	String getString(String key, String def) {
 		SharedPreferences prefs = PreferenceManager
 				.getDefaultSharedPreferences(context);
 		String s = prefs.getString(key, def);
