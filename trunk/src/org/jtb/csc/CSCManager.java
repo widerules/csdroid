@@ -25,9 +25,7 @@ import org.jtb.csdroid.ClosestActivity;
 import org.jtb.csdroid.TabWidgetActivity;
 
 import android.content.Context;
-import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Message;
 import android.util.Log;
 

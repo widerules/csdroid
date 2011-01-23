@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.jtb.csc.CSCManager;
 import org.jtb.csc.Site;
+import org.jtb.csdroid.donate.R;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
