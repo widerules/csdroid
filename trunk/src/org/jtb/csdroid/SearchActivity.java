@@ -11,7 +11,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,11 +18,11 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.AdapterView.OnItemClickListener;
 
 public class SearchActivity extends Activity {
 	private static final int SEARCHING_DIALOG = 0;
@@ -66,8 +65,8 @@ public class SearchActivity extends Activity {
 				updateList();
 				break;
 			case SEARCHING_DIALOG_DISMISS_WHAT:
-				if (mSearchingDialog.isShowing()) {
-					dismissDialog(SEARCHING_DIALOG);
+				if (mSearchingDialog != null && mSearchingDialog.isShowing()) {
+					mSearchingDialog.hide();
 				}
 				break;
 			case HIDE_LIST_WHAT:
@@ -158,15 +157,19 @@ public class SearchActivity extends Activity {
 	protected Dialog onCreateDialog(int id) {
 		switch (id) {
 		case SEARCHING_DIALOG: {
-			mSearchingDialog = new ProgressDialog(this);
-			mSearchingDialog.setMessage("Searching, please wait.");
-			mSearchingDialog.setIndeterminate(true);
-			mSearchingDialog.setCancelable(false);
+			if (mSearchingDialog == null) {
+				mSearchingDialog = new ProgressDialog(this);
+				mSearchingDialog.setMessage("Searching, please wait.");
+				mSearchingDialog.setIndeterminate(true);
+				mSearchingDialog.setCancelable(false);
+			}
 			return mSearchingDialog;
 		}
 		case INFO_DIALOG: {
-			AlertDialog.Builder builder = new InfoDialog.Builder(this);
-			mInfoDialog = builder.create();
+			if (mInfoDialog == null) {
+				AlertDialog.Builder builder = new InfoDialog.Builder(this);
+				mInfoDialog = builder.create();
+			}
 			return mInfoDialog;
 		}
 		}
