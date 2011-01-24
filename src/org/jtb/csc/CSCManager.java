@@ -39,7 +39,7 @@ public class CSCManager {
 
 	private Map<String, Site> siteMap = null;
 	private Map<String, Conditions> conditionsMap = new HashMap<String, Conditions>();
-	
+
 	private File cacheDir;
 	private File siteFile;
 	private File siteLocationFile;
@@ -73,7 +73,7 @@ public class CSCManager {
 		// data
 		//
 
-		// 
+		//
 		// there are three possible states,
 		// 1. no data, or out of date on disk
 		// 2. data on disk, but not in memory
@@ -145,23 +145,25 @@ public class CSCManager {
 			String line;
 			Site s;
 			while ((line = br.readLine()) != null) {
-				s = new Site(cacheDir, line);
-				if (s.getId() != null) {
-					siteMap.put(s.getId(), s);
+				try {
+					s = new Site(cacheDir, line);
+					if (s.getId() != null) {
+						siteMap.put(s.getId(), s);
+					}
+				} catch (IndexOutOfBoundsException e) {
+					Log.w("csdroid",
+							"csc manager, could not parse site, line: " + line);
 				}
 			}
-			Log.d("csdroid", "read "
-					+ siteMap.keySet().size() + " sites");
-			Log.d("csdroid", "took: " + bt.elapsed()
-					+ "ms to load sites");
+			Log.d("csdroid", "csc manager, read " + siteMap.keySet().size()
+					+ " sitesm elasped time: " + bt.elapsed() + "ms");
 		} finally {
 			try {
 				if (br != null) {
 					br.close();
 				}
 			} catch (IOException ioe) {
-				Log.e("csdroid", "error closing sites file",
-						ioe);
+				Log.e("csdroid", "error closing sites file", ioe);
 			}
 		}
 
@@ -186,9 +188,8 @@ public class CSCManager {
 				sl = new SiteLocation(line);
 				s = siteMap.get(sl.getId());
 				if (s == null) {
-					Log.d("csdroid",
-							"no site found for site location id: \""
-									+ sl.getId() + "\", ignoring");
+					Log.d("csdroid", "no site found for site location id: \""
+							+ sl.getId() + "\", ignoring");
 
 				} else if (sl.isLocatable()) {
 					s.setSiteLocation(sl);
@@ -202,15 +203,13 @@ public class CSCManager {
 					br.close();
 				}
 			} catch (IOException ioe) {
-				Log.e("csdroid",
-						"error closing site locations file", ioe);
+				Log.e("csdroid", "error closing site locations file", ioe);
 			}
 		}
 	}
 
 	private void readUrl(String url, File f, int bufferSize) throws IOException {
-		Log.d("csdroid", "reading URL: " + url
-				+ " into file: " + f);
+		Log.d("csdroid", "reading URL: " + url + " into file: " + f);
 
 		InputStream is = null;
 		OutputStream os = null;
@@ -271,8 +270,8 @@ public class CSCManager {
 			return;
 		}
 		float[] results = new float[3];
-		Location.distanceBetween(l.getLatitude(), l.getLongitude(), s
-				.getLatitude(), s.getLongitude(), results);
+		Location.distanceBetween(l.getLatitude(), l.getLongitude(),
+				s.getLatitude(), s.getLongitude(), results);
 		s.setDistance(results[0]);
 	}
 
@@ -339,9 +338,7 @@ public class CSCManager {
 		for (String id : siteIds) {
 			Site s = siteMap.get(id);
 			if (s == null) {
-				Log
-						.w(getClass().getSimpleName(), "no site found for id: "
-								+ id);
+				Log.w(getClass().getSimpleName(), "no site found for id: " + id);
 				continue;
 			}
 

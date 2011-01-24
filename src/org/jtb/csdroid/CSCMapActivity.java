@@ -6,18 +6,15 @@ import org.jtb.csc.CSCManager;
 import org.jtb.csc.Site;
 import org.jtb.csdroid.donate.R;
 
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.util.Log;
+
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
-
-import android.app.Activity;
-import android.graphics.drawable.Drawable;
-import android.os.Bundle;
-import android.util.Log;
-import android.widget.LinearLayout;
-import android.widget.ZoomControls;
 
 public class CSCMapActivity extends MapActivity {
 	static CSCMapActivity mThis;
