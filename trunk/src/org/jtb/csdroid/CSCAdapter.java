@@ -9,7 +9,6 @@ import org.jtb.csc.CSCManager;
 import org.jtb.csc.Conditions;
 import org.jtb.csc.Site;
 import org.jtb.csc.ViewRating;
-import org.jtb.csdroid.donate.R;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
