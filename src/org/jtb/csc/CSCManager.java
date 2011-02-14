@@ -217,6 +217,9 @@ public class CSCManager {
 		try {
 			URL u = new URL(url);
 			HttpURLConnection uc = (HttpURLConnection) u.openConnection();
+			uc.setRequestProperty(
+					"User-agent",
+					"Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30)");
 			uc.setReadTimeout(10000);
 
 			if (uc.getResponseCode() != 200) {
