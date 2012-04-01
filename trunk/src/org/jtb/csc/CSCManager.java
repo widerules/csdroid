@@ -338,8 +338,9 @@ public class CSCManager {
 	public synchronized List<Site> getSites(CSCLocation location,
 			Collection<String> siteIds) {
 		List<Site> sites = new ArrayList<Site>();
+		Site s;
 		for (String id : siteIds) {
-			Site s = siteMap.get(id);
+			s = siteMap.get(id);
 			if (s == null) {
 				Log.w(getClass().getSimpleName(), "no site found for id: " + id);
 				continue;
@@ -415,8 +416,9 @@ public class CSCManager {
 	}
 
 	private void readSummaryImages(List<Site> sites) throws IOException {
+		File f;
 		for (Site s : sites) {
-			File f = s.getSummaryImageFile();
+			f = s.getSummaryImageFile();
 			if (!f.exists()) {
 				String u = s.getSummaryImageUrl();
 				readUrl(u, f, 512);
