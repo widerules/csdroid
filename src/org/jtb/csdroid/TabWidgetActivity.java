@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.jtb.csc.CSCLocation;
 import org.jtb.csc.CSCManager;
-import org.jtb.csc.Site;
+import org.jtb.csdroid.R;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -15,7 +15,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Address;
-import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
@@ -45,7 +44,6 @@ public class TabWidgetActivity extends TabActivity {
 	private static final int LOCATION_ERROR_DIALOG = 4;
 	private static final int GEOCODE_ERROR_DIALOG = 5;
 	private static final int REFRESH_ERROR_DIALOG = 6;
-	static final int FAVE_SHORTCUT_DIALOG = 7;
 
 	private static final int INFO_MENU = 0;
 	private static final int ADDRESS_MENU = 1;
@@ -67,7 +65,6 @@ public class TabWidgetActivity extends TabActivity {
 	private AlertDialog mGeocodeErrorDialog;
 	private AlertDialog mLocationErrorDialog;
 	private AlertDialog mRefreshErrorDialog;
-	Dialog mFaveShortcutDialog = null;
 
 	private Prefs mPrefs;
 	private String mRefreshError = null;
@@ -91,7 +88,9 @@ public class TabWidgetActivity extends TabActivity {
 				}
 				break;
 			case FAVE_SHORTCUT_SHOW_WHAT:
-				showDialog(FAVE_SHORTCUT_DIALOG);
+				Intent i = new Intent(TabWidgetActivity.this,
+						FavesShortcutActivity.class);
+				startActivity(i);
 				break;
 			}
 		}
@@ -185,23 +184,19 @@ public class TabWidgetActivity extends TabActivity {
 
 	private boolean setLocationByProvider() {
 		LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		String name = lm.getBestProvider(new Criteria(), true);
-		if (name == null) {
-			Log.w(getClass().getSimpleName(), "no location provider returned");
-			return false;
+		Location l = null;
+
+		for (String providerName : lm.getProviders(true)) {
+			l = lm.getLastKnownLocation(providerName);
+			if (l != null) {
+				TabWidgetActivity.mLocation.setLatitude(l.getLatitude());
+				TabWidgetActivity.mLocation.setLongitude(l.getLongitude());
+				return true;
+			}
 		}
 
-		// LocationProvider lp = lm.getProvider(name);
-
-		Location l = lm.getLastKnownLocation(name);
-		if (l == null) {
-			Log.w(getClass().getSimpleName(), "no last location");
-			return false;
-		}
-
-		TabWidgetActivity.mLocation.setLatitude(l.getLatitude());
-		TabWidgetActivity.mLocation.setLongitude(l.getLongitude());
-		return true;
+		Log.w(getClass().getSimpleName(), "no last location");
+		return false;
 	}
 
 	private void initActivity() {
@@ -491,34 +486,8 @@ public class TabWidgetActivity extends TabActivity {
 			mRefreshErrorDialog = builder.create();
 			return mRefreshErrorDialog;
 		}
-		case FAVE_SHORTCUT_DIALOG: {
-			if (mFaveShortcutDialog == null) {
-				AlertDialog.Builder builder = new FaveShortcutDialogBuilder(
-						this);
-				mFaveShortcutDialog = builder.create();
-			}
-			return mFaveShortcutDialog;
-		}
 		}
 		return null;
-	}
-
-	void saveShortcut(Site site) {
-		Intent shortcutIntent = new Intent(this, TabWidgetActivity.class);
-		// shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		// shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-		// TODO: get side ID and add it
-		shortcutIntent.putExtra("org.jtb.csdroid.site.id", site.getId());
-
-		Intent intent = new Intent();
-		intent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
-		intent.putExtra(Intent.EXTRA_SHORTCUT_NAME, site.getName());
-		intent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE,
-				Intent.ShortcutIconResource.fromContext(this, R.drawable.icon));
-		intent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
-
-		setResult(RESULT_OK, intent);
-		finish();
 	}
 
 }

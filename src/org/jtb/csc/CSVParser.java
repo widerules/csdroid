@@ -12,8 +12,9 @@ class CSVParser {
 		}
 
 		StringBuilder sb = new StringBuilder();
+		char c;
 		for (int i = 0; i < line.length(); i++) {
-			char c = line.charAt(i);
+			c = line.charAt(i);
 			switch (c) {
 			case ',':
 			case '|':

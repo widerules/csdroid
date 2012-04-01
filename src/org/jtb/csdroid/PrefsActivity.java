@@ -1,5 +1,7 @@
 package org.jtb.csdroid;
 
+import org.jtb.csdroid.R;
+
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
