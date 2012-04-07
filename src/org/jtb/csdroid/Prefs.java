@@ -3,10 +3,11 @@ package org.jtb.csdroid;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.widget.TabHost;
 
-public class Prefs {	
+public class Prefs {
 	private Context context = null;
 
 	public Prefs(Context context) {
@@ -93,13 +94,13 @@ public class Prefs {
 		String currentTab = getString("currentTab", "closest");
 		return currentTab;
 	}
-	
-	public void setCurrentTab(TabHost tabHost, String tabId) {
+
+	public void setCurrentTab(final TabHost tabHost) {
 		String currentTab = tabHost.getCurrentTabTag();
 		setString("currentTab", currentTab);
-	}	
-	
-	public void setAddress(String address) {
+	}
+
+	public void setAddress(final String address) {
 		setString("address", address);
 	}
 
@@ -107,7 +108,7 @@ public class Prefs {
 		String address = getString("address", "");
 		return address;
 	}
-	
+
 	public Units getUnits() {
 		String us = getString("units", "METRIC");
 		return Units.valueOf(us);

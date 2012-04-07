@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.jtb.csc.CSCManager;
 import org.jtb.csc.Site;
-import org.jtb.csdroid.R;
+import org.jtb.csdroid.donate.R;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -12,10 +12,12 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -114,30 +116,36 @@ public class FavesActivity extends Activity implements
 	}
 
 	private void update() {
-		new Thread(new Runnable() {
-			public void run() {
-				Message m = Message.obtain(mHandler, UPDATE_DIALOG_SHOW_WHAT);
-				mHandler.sendMessage(m);
-				m = Message.obtain(mHandler, HIDE_LIST_WHAT);
-				mHandler.sendMessage(m);
+		new AsyncTask<Void, Void, List<Site>>() {
+			@Override
+			protected void onPreExecute() {
+				showDialog(UPDATE_DIALOG);
+				mCSCListView.setVisibility(View.GONE);
+			}
 
+			@Override
+			protected List<Site> doInBackground(Void... params) {
 				SharedPreferences prefs = PreferenceManager
 						.getDefaultSharedPreferences(getBaseContext());
 				String f = prefs.getString("faves", "");
 				Faves faves = new Faves(f);
 
-				mSites = CSCManager.getInstance(getBaseContext()).getSites(
-						TabWidgetActivity.mLocation, faves.getFaves());
-				m = Message.obtain(mHandler, UPDATE_LIST_WHAT);
-				mHandler.sendMessage(m);
-
-				m = Message.obtain(mHandler, SHOW_LIST_WHAT);
-				mHandler.sendMessage(m);
-				m = Message.obtain(mHandler, UPDATE_DIALOG_DISMISS_WHAT);
-				mHandler.sendMessage(m);
-
+				List<Site> sites = CSCManager
+						.getInstance(getBaseContext())
+						.getSites(TabWidgetActivity.mLocation, faves.getFaves());
+				return sites;
 			}
-		}).start();
+
+			@Override
+			protected void onPostExecute(List<Site> sites) {
+				mSites = sites;
+				updateList();
+				mCSCListView.setVisibility(View.VISIBLE);
+				if (mUpdateDialog != null && mUpdateDialog.isShowing()) {
+					mUpdateDialog.hide();
+				}
+			}
+		}.execute();
 	}
 
 	protected Dialog onCreateDialog(int id) {

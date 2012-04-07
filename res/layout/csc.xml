@@ -1,35 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="horizontal" android:layout_width="fill_parent"
-	android:layout_height="fill_parent">
-	<LinearLayout android:orientation="horizontal" android:id="@+id/csc_rating"
-		android:layout_width="8px" android:layout_height="fill_parent" />
-	<TableLayout android:layout_height="fill_parent"
-		android:layout_width="fill_parent" android:paddingBottom="4dp"
-		android:paddingLeft="4dp">
-		<TableRow android:id="@+id/csc_text_row">
-			<TextView android:text="TestRegion - Test Chart Name"
-				android:textStyle="bold"
-				android:id="@+id/csc_label" android:textSize="16dp"
-				android:layout_width="fill_parent" android:layout_height="wrap_content" />
-		</TableRow>
-		<TableRow>
-			<TableLayout android:layout_height="wrap_content"
-				android:layout_width="wrap_content" android:shrinkColumns="*">
-				<TableRow>
-					<TextView android:id="@+id/csc_rating_label" android:text="Poor" android:textSize="12dp"
-						android:layout_width="fill_parent" android:layout_height="wrap_content" />
-					<TextView android:text=" conditions, " android:textSize="12dp"
-						android:layout_width="fill_parent" android:layout_height="wrap_content" />
-					<TextView android:id="@+id/csc_distance" android:text="123km"
-						android:layout_width="fill_parent" android:textSize="12dp"
-						android:layout_height="wrap_content" />
-				</TableRow>
-			</TableLayout>
-		</TableRow>
-		<TableRow android:id="@+id/csc_image_row">
-			<ImageView android:id="@+id/csc_summary_img"
-				android:paddingBottom="2px" />
-		</TableRow>
-	</TableLayout>
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="horizontal" >
+
+    <LinearLayout
+        android:id="@+id/csc_rating"
+        android:layout_width="8dp"
+        android:layout_height="fill_parent"
+        android:orientation="horizontal" >
+    </LinearLayout>
+
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:paddingLeft="4dp"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/csc_label"
+            style="@android:style/TextAppearance.Medium"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:text="TestRegion - Test Chart Name" />
+
+        <TextView
+            android:id="@+id/csc_rating_label"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Poor conditions"
+            style="@android:style/TextAppearance.Small"/>
+
+        <TextView
+            android:id="@+id/csc_distance"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="123km"
+            style="@android:style/TextAppearance.Small"/>
+
+        <ImageView
+            android:id="@+id/csc_summary_img"
+            android:layout_width="wrap_content"
+            android:paddingBottom="4dp"
+            android:layout_height="26px"/>
+    </LinearLayout>
+
 </LinearLayout>
