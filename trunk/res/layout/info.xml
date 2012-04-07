@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical" android:layout_width="fill_parent"
-	android:layout_height="fill_parent" android:paddingLeft="16px" android:paddingRight="16px">
+	android:layout_height="fill_parent" android:paddingLeft="8dp" android:paddingRight="8dp">
 	<LinearLayout android:orientation="horizontal"
 		android:layout_height="fill_parent" 
 		android:layout_width="wrap_content" android:layout_gravity="center_horizontal">
@@ -10,7 +10,7 @@
 			android:src="@drawable/icon" />
 		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 			android:orientation="vertical" android:layout_width="fill_parent"
-			android:layout_height="fill_parent" android:paddingLeft="5px">
+			android:layout_height="fill_parent" android:paddingLeft="4dp">
 			<TextView android:text="CSDroid"
 				android:textSize="16dp" android:layout_width="fill_parent"
 				android:layout_height="wrap_content"  />

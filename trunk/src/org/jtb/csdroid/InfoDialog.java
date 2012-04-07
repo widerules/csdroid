@@ -1,6 +1,6 @@
 package org.jtb.csdroid;
 
-import org.jtb.csdroid.R;
+import org.jtb.csdroid.donate.R;
 
 import android.app.AlertDialog;
 import android.content.Context;

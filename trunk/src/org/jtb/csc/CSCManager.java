@@ -146,7 +146,7 @@ public class CSCManager {
 			Site s;
 			while ((line = br.readLine()) != null) {
 				try {
-					s = new Site(cacheDir, line);
+					s = new Site(cacheDir, line);					
 					if (s.getId() != null) {
 						siteMap.put(s.getId(), s);
 					}

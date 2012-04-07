@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.jtb.csc.CSCManager;
 import org.jtb.csc.Site;
-import org.jtb.csdroid.R;
+import org.jtb.csdroid.donate.R;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -12,6 +12,7 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -125,30 +126,34 @@ public class ClosestActivity extends Activity {
 	}
 
 	private void update() {
-		showDialog(UPDATE_LOCATION_DIALOG);
-		new Thread(new Runnable() {
-			public void run() {
-				try {
-					Message m = Message.obtain(mHandler, HIDE_LIST_WHAT);
-					mHandler.sendMessage(m);
-
-					CSCManager cscm = CSCManager.getInstance(mThis);
-					int maxCharts = getMaxCharts();
-					Log.d(getClass().getSimpleName(), "getting up to "
-							+ maxCharts);
-					mSites = cscm.getSites(TabWidgetActivity.mLocation,
-							maxCharts);
-
-					mHandler.sendMessage(Message.obtain(mHandler,
-							UPDATE_LIST_WHAT));
-					m = Message.obtain(mHandler, SHOW_LIST_WHAT);
-					mHandler.sendMessage(m);
-				} finally {
-					mHandler.sendMessage(Message.obtain(mHandler,
-							UPDATE_LOCATION_DIALOG_DISMISS_WHAT));
-				}
+		new AsyncTask<Void, Void, List<Site>>() {
+			@Override
+			protected void onPreExecute() {
+				showDialog(UPDATE_LOCATION_DIALOG);
+				mCSCListView.setVisibility(View.GONE);
 			}
-		}).start();
+
+			@Override
+			protected List<Site> doInBackground(Void... params) {
+				CSCManager cscm = CSCManager.getInstance(mThis);
+				int maxCharts = getMaxCharts();
+				Log.d(getClass().getSimpleName(), "getting up to "
+						+ maxCharts);
+				List<Site> sites = cscm.getSites(TabWidgetActivity.mLocation,
+						maxCharts);
+				return sites;
+			}
+
+			@Override
+			protected void onPostExecute(List<Site> sites) {
+				mSites = sites;
+				updateList();
+				mCSCListView.setVisibility(View.VISIBLE);
+				if (mUpdateLocationDialog.isShowing()) {
+					mUpdateLocationDialog.hide();
+				}
+			}			
+		}.execute();
 	}
 
 	protected Dialog onCreateDialog(int id) {

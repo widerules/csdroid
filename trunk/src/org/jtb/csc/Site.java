@@ -25,7 +25,7 @@ public class Site implements Serializable {
 	private float distance = Float.MAX_VALUE;
 	private File cacheDir;
 	private boolean locatable = false;
-
+	
 	public static class DistanceComparator<T> implements Comparator<Site> {
 		public int compare(Site s1, Site s2) {
 			float d1 = s1.getDistance();
@@ -61,7 +61,7 @@ public class Site implements Serializable {
 		nameLc = name.toLowerCase();
 		this.cacheDir = cacheDir;
 	}
-
+	
 	public boolean isLocatable() {
 		return locatable;
 	}

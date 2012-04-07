@@ -3,17 +3,19 @@ package org.jtb.csdroid;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 
 import org.jtb.csc.CSCManager;
 import org.jtb.csc.Conditions;
 import org.jtb.csc.Site;
 import org.jtb.csc.ViewRating;
-import org.jtb.csdroid.R;
+import org.jtb.csdroid.donate.R;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,20 +27,27 @@ import android.widget.TextView;
 public class CSCAdapter extends ArrayAdapter<Site> {
 	private Activity context;
 	private List<Site> sites;
-	private Prefs prefs;
+	private Units units;
+	private LayoutInflater inflater;
 
 	CSCAdapter(Activity context, List<Site> sites) {
 		super(context, R.layout.csc, sites);
 
 		this.context = context;
 		this.sites = sites;
-		prefs = new Prefs(context);
+		Prefs prefs = new Prefs(context);
+		this.units = prefs.getUnits();
+		this.inflater = context.getLayoutInflater();
 	}
 
-	public View getView(int position, View convertView, ViewGroup parent) {
-		LayoutInflater inflater = context.getLayoutInflater();
-		View view = inflater.inflate(R.layout.csc, null);
-		Site s = sites.get(position);
+	public View getView(int position, View convertView, final ViewGroup parent) {
+		View view;
+		if (convertView != null) {
+			view = convertView;
+		} else {
+			view = inflater.inflate(R.layout.csc, null);
+		}
+		final Site s = sites.get(position);
 
 		ViewRating vr = ViewRating.NONE;
 		CSCManager cscm = CSCManager.getInstance(context);
@@ -57,13 +66,13 @@ public class CSCAdapter extends ArrayAdapter<Site> {
 
 		TextView ratingLabel = (TextView) view
 				.findViewById(R.id.csc_rating_label);
-		String r = vr.toDisplayString();
+		String r = vr.toDisplayString() + " conditions";
 		ratingLabel.setText(r);
 
 		TextView distance = (TextView) view.findViewById(R.id.csc_distance);
 		if (s.isLocatable()) {
 			float d = s.getDistance();
-			if (prefs.getUnits() == Units.METRIC) {
+			if (units == Units.METRIC) {
 				distance.setText((int) (d / 1000) + " km");
 			} else {
 				distance.setText((int) (d / 1000 * Units.MILES_MUTLIPLIER)
@@ -72,19 +81,42 @@ public class CSCAdapter extends ArrayAdapter<Site> {
 		} else {
 			distance.setText("unknown location");
 		}
-		ImageView summaryImg = (ImageView) view
+
+		// load summary image
+
+		final ImageView summaryImg = (ImageView) view
 				.findViewById(R.id.csc_summary_img);
-		BufferedInputStream bis;
-		try {
-			bis = new BufferedInputStream(new FileInputStream(s
-					.getSummaryImageFile()), 512);
-			Bitmap bm = BitmapFactory.decodeStream(bis);
-			summaryImg.setImageBitmap(bm);
-		} catch (FileNotFoundException e) {
-			Log
-					.e(getClass().getSimpleName(),
+
+		new AsyncTask<Void, Void, Bitmap>() {
+			@Override
+			protected Bitmap doInBackground(Void... vs) {
+				BufferedInputStream bis = null;
+				try {
+					bis = new BufferedInputStream(new FileInputStream(
+							s.getSummaryImageFile()), 512);
+					Bitmap bm = BitmapFactory.decodeStream(bis);
+					return bm;
+				} catch (FileNotFoundException e) {
+					Log.e(getClass().getSimpleName(),
 							"could not read summary image", e);
-		}
+					return null;
+				} finally {
+					if (bis != null) {
+						try {
+							bis.close();
+						} catch (IOException e) {
+						}
+					}
+				}
+			}
+
+			@Override
+			protected void onPostExecute(Bitmap result) {
+				if (result != null) {
+					summaryImg.setImageBitmap(result);
+				}
+			}
+		}.execute();
 
 		return view;
 	}

@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.jtb.csc.CSCManager;
 import org.jtb.csc.Site;
-import org.jtb.csdroid.R;
+import org.jtb.csdroid.donate.R;
 
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;

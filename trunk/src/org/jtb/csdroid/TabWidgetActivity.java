@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.jtb.csc.CSCLocation;
 import org.jtb.csc.CSCManager;
-import org.jtb.csdroid.R;
+import org.jtb.csdroid.donate.R;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -133,7 +133,7 @@ public class TabWidgetActivity extends TabActivity {
 
 		mTabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
 			public void onTabChanged(String tabId) {
-				mPrefs.setCurrentTab(mTabHost, tabId);
+				mPrefs.setCurrentTab(mTabHost);
 				initActivity();
 			}
 		});
@@ -201,14 +201,13 @@ public class TabWidgetActivity extends TabActivity {
 
 	private void initActivity() {
 		String tabId = mPrefs.getCurrentTab();
+		setLocation();
 
 		if (tabId.equals("closest")) {
-			if (setLocation()) {
-				Handler h = ClosestActivity.mStaticHandler;
-				if (h != null) {
-					h.sendMessage(ClosestActivity.mStaticHandler
-							.obtainMessage(ClosestActivity.INIT_WHAT));
-				}
+			Handler h = ClosestActivity.mStaticHandler;
+			if (h != null) {
+				h.sendMessage(ClosestActivity.mStaticHandler
+						.obtainMessage(ClosestActivity.INIT_WHAT));
 			}
 		} else if (tabId.equals("search")) {
 			Handler h = SearchActivity.mStaticHandler;
@@ -227,14 +226,13 @@ public class TabWidgetActivity extends TabActivity {
 
 	private void updateActivity() {
 		String tabId = mPrefs.getCurrentTab();
+		setLocation();
 
 		if (tabId.equals("closest")) {
-			if (setLocation()) {
-				Handler h = ClosestActivity.mStaticHandler;
-				if (h != null) {
-					h.sendMessage(ClosestActivity.mStaticHandler
-							.obtainMessage(ClosestActivity.UPDATE_WHAT));
-				}
+			Handler h = ClosestActivity.mStaticHandler;
+			if (h != null) {
+				h.sendMessage(ClosestActivity.mStaticHandler
+						.obtainMessage(ClosestActivity.UPDATE_WHAT));
 			}
 		} else if (tabId.equals("search")) {
 			Handler h = SearchActivity.mStaticHandler;

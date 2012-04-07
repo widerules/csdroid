@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.jtb.csc.CSCManager;
 import org.jtb.csc.Site;
-import org.jtb.csdroid.R;
+import org.jtb.csdroid.donate.R;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -19,34 +19,39 @@ public class FavesShortcutActivity extends Activity {
 	private Prefs prefs;
 	private List<Site> sites;
 	private ListView faveList;
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		setContentView(R.layout.fave_dialog);
-		
+
 		prefs = new Prefs(this);
-
-		faveList = (ListView) this.findViewById(R.id.fave_list);
-
 		String f = prefs.getString("faves", "");
 		Faves faves = new Faves(f);
 
-		sites = CSCManager.getInstance(this).getSites(
-				TabWidgetActivity.mLocation, faves.getFaves());
-		
-		faveList.setAdapter(new CSCAdapter(this, sites));
-		faveList.setOnItemClickListener(new OnItemClickListener() {
-			public void onItemClick(AdapterView<?> parent, View v,
-					int position, long id) {
-				Site fave = sites.get(position);
-				saveShortcut(fave);
-				finish();		
-			}
-		});
+		if (faves.getFaves().isEmpty()) {
+			setContentView(R.layout.fave_dialog_empty);
+		} else {
+
+			setContentView(R.layout.fave_dialog);
+
+			faveList = (ListView) this.findViewById(R.id.fave_list);
+
+			sites = CSCManager.getInstance(this).getSites(
+					TabWidgetActivity.mLocation, faves.getFaves());
+
+			faveList.setAdapter(new CSCAdapter(this, sites));
+			faveList.setOnItemClickListener(new OnItemClickListener() {
+				public void onItemClick(AdapterView<?> parent, View v,
+						int position, long id) {
+					Site fave = sites.get(position);
+					saveShortcut(fave);
+					finish();
+				}
+			});
+		}
 	}
-	
+
 	private void saveShortcut(Site site) {
 		Intent shortcutIntent = new Intent(this, TabWidgetActivity.class);
 		// shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -65,5 +70,4 @@ public class FavesShortcutActivity extends Activity {
 		finish();
 	}
 
-	
 }

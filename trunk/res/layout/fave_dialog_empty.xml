@@ -9,7 +9,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:padding="4dp"
-        android:text="Select a favorite" />
+        android:text="No favorites!" />
 
     <View
         android:layout_width="fill_parent"
@@ -17,15 +17,11 @@
         android:background="#eee"
         android:padding="4dp" />
 
-    <LinearLayout
+    <TextView
+        style="@android:style/TextAppearance.Medium"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:orientation="vertical" >
-
-        <ListView
-            android:id="@+id/fave_list"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
-
+        android:layout_height="wrap_content"
+        android:padding="4dp"
+        android:text="No favorite sites. Start the application and add some favorites first." />
+    
 </LinearLayout>
